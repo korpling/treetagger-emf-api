@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/de.hu_berlin.german.korpling.saltnpepper.misc.TreetaggerModel/src/main/java"
+    modelPluginID="de.hu_berlin.german.korpling.saltnpepper.misc.TreetaggerModel"
+    modelName="TreetaggerModel" modelPluginClass="" testsDirectory="/de.hu_berlin.german.korpling.saltnpepper.misc.TreetaggerModel.tests/src/test/java"
+    importerID="org.eclipse.emf.importer.ecore" complianceLevel="6.0" copyrightFields="false">
+  <foreignModel>treetagger.ecore</foreignModel>
+  <genPackages prefix="Treetagger" basePackage="de.hu_berlin.german.korpling.saltnpepper.misc"
+      disposableProviderFactory="true" ecorePackage="treetagger.ecore#/">
+    <genClasses ecoreClass="treetagger.ecore#//Document">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute treetagger.ecore#//Document/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference treetagger.ecore#//Document/tokens"/>
+    </genClasses>
+    <genClasses ecoreClass="treetagger.ecore#//Token">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference treetagger.ecore#//Token/annotations"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute treetagger.ecore#//Token/text"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference treetagger.ecore#//Token/posAnnotation"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference treetagger.ecore#//Token/lemmaAnnotation"/>
+      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference treetagger.ecore#//Token/document"/>
+    </genClasses>
+    <genClasses ecoreClass="treetagger.ecore#//Annotation">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute treetagger.ecore#//Annotation/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute treetagger.ecore#//Annotation/value"/>
+      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference treetagger.ecore#//Annotation/token"/>
+    </genClasses>
+    <genClasses ecoreClass="treetagger.ecore#//POSAnnotation"/>
+    <genClasses ecoreClass="treetagger.ecore#//LemmaAnnotation"/>
+    <genClasses ecoreClass="treetagger.ecore#//AnyAnnotation"/>
+  </genPackages>
+</genmodel:GenModel>
