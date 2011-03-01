@@ -17,19 +17,16 @@
  */
 package de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl;
 
-import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Annotation;
-import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Token;
-import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.TreetaggerPackage;
-
 import org.eclipse.emf.common.notify.Notification;
-
 import org.eclipse.emf.common.notify.NotificationChain;
 import org.eclipse.emf.ecore.EClass;
-
 import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
 import org.eclipse.emf.ecore.impl.EObjectImpl;
-import org.eclipse.emf.ecore.util.EcoreUtil;
+
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.AnnotatableElement;
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Annotation;
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.TreetaggerPackage;
 
 /**
  * <!-- begin-user-doc -->
@@ -40,7 +37,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
  * <ul>
  *   <li>{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.AnnotationImpl#getName <em>Name</em>}</li>
  *   <li>{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.AnnotationImpl#getValue <em>Value</em>}</li>
- *   <li>{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.AnnotationImpl#getToken <em>Token</em>}</li>
+ *   <li>{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.AnnotationImpl#getAnnotatableElement <em>Annotatable Element</em>}</li>
  * </ul>
  * </p>
  *
@@ -86,6 +83,16 @@ public class AnnotationImpl extends EObjectImpl implements Annotation {
 	 * @ordered
 	 */
 	protected String value = VALUE_EDEFAULT;
+
+	/**
+	 * The cached value of the '{@link #getAnnotatableElement() <em>Annotatable Element</em>}' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getAnnotatableElement()
+	 * @generated
+	 * @ordered
+	 */
+	protected AnnotatableElement annotatableElement;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -153,9 +160,16 @@ public class AnnotationImpl extends EObjectImpl implements Annotation {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public Token getToken() {
-		if (eContainerFeatureID() != TreetaggerPackage.ANNOTATION__TOKEN) return null;
-		return (Token)eContainer();
+	public AnnotatableElement getAnnotatableElement() {
+		if (annotatableElement != null && annotatableElement.eIsProxy()) {
+			InternalEObject oldAnnotatableElement = (InternalEObject)annotatableElement;
+			annotatableElement = (AnnotatableElement)eResolveProxy(oldAnnotatableElement);
+			if (annotatableElement != oldAnnotatableElement) {
+				if (eNotificationRequired())
+					eNotify(new ENotificationImpl(this, Notification.RESOLVE, TreetaggerPackage.ANNOTATION__ANNOTATABLE_ELEMENT, oldAnnotatableElement, annotatableElement));
+			}
+		}
+		return annotatableElement;
 	}
 
 	/**
@@ -163,8 +177,22 @@ public class AnnotationImpl extends EObjectImpl implements Annotation {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public NotificationChain basicSetToken(Token newToken, NotificationChain msgs) {
-		msgs = eBasicSetContainer((InternalEObject)newToken, TreetaggerPackage.ANNOTATION__TOKEN, msgs);
+	public AnnotatableElement basicGetAnnotatableElement() {
+		return annotatableElement;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public NotificationChain basicSetAnnotatableElement(AnnotatableElement newAnnotatableElement, NotificationChain msgs) {
+		AnnotatableElement oldAnnotatableElement = annotatableElement;
+		annotatableElement = newAnnotatableElement;
+		if (eNotificationRequired()) {
+			ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, TreetaggerPackage.ANNOTATION__ANNOTATABLE_ELEMENT, oldAnnotatableElement, newAnnotatableElement);
+			if (msgs == null) msgs = notification; else msgs.add(notification);
+		}
 		return msgs;
 	}
 
@@ -173,20 +201,18 @@ public class AnnotationImpl extends EObjectImpl implements Annotation {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public void setToken(Token newToken) {
-		if (newToken != eInternalContainer() || (eContainerFeatureID() != TreetaggerPackage.ANNOTATION__TOKEN && newToken != null)) {
-			if (EcoreUtil.isAncestor(this, newToken))
-				throw new IllegalArgumentException("Recursive containment not allowed for " + toString());
+	public void setAnnotatableElement(AnnotatableElement newAnnotatableElement) {
+		if (newAnnotatableElement != annotatableElement) {
 			NotificationChain msgs = null;
-			if (eInternalContainer() != null)
-				msgs = eBasicRemoveFromContainer(msgs);
-			if (newToken != null)
-				msgs = ((InternalEObject)newToken).eInverseAdd(this, TreetaggerPackage.TOKEN__ANNOTATIONS, Token.class, msgs);
-			msgs = basicSetToken(newToken, msgs);
+			if (annotatableElement != null)
+				msgs = ((InternalEObject)annotatableElement).eInverseRemove(this, TreetaggerPackage.ANNOTATABLE_ELEMENT__ANNOTATIONS, AnnotatableElement.class, msgs);
+			if (newAnnotatableElement != null)
+				msgs = ((InternalEObject)newAnnotatableElement).eInverseAdd(this, TreetaggerPackage.ANNOTATABLE_ELEMENT__ANNOTATIONS, AnnotatableElement.class, msgs);
+			msgs = basicSetAnnotatableElement(newAnnotatableElement, msgs);
 			if (msgs != null) msgs.dispatch();
 		}
 		else if (eNotificationRequired())
-			eNotify(new ENotificationImpl(this, Notification.SET, TreetaggerPackage.ANNOTATION__TOKEN, newToken, newToken));
+			eNotify(new ENotificationImpl(this, Notification.SET, TreetaggerPackage.ANNOTATION__ANNOTATABLE_ELEMENT, newAnnotatableElement, newAnnotatableElement));
 	}
 
 	/**
@@ -197,10 +223,10 @@ public class AnnotationImpl extends EObjectImpl implements Annotation {
 	@Override
 	public NotificationChain eInverseAdd(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
 		switch (featureID) {
-			case TreetaggerPackage.ANNOTATION__TOKEN:
-				if (eInternalContainer() != null)
-					msgs = eBasicRemoveFromContainer(msgs);
-				return basicSetToken((Token)otherEnd, msgs);
+			case TreetaggerPackage.ANNOTATION__ANNOTATABLE_ELEMENT:
+				if (annotatableElement != null)
+					msgs = ((InternalEObject)annotatableElement).eInverseRemove(this, TreetaggerPackage.ANNOTATABLE_ELEMENT__ANNOTATIONS, AnnotatableElement.class, msgs);
+				return basicSetAnnotatableElement((AnnotatableElement)otherEnd, msgs);
 		}
 		return super.eInverseAdd(otherEnd, featureID, msgs);
 	}
@@ -213,24 +239,10 @@ public class AnnotationImpl extends EObjectImpl implements Annotation {
 	@Override
 	public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
 		switch (featureID) {
-			case TreetaggerPackage.ANNOTATION__TOKEN:
-				return basicSetToken(null, msgs);
+			case TreetaggerPackage.ANNOTATION__ANNOTATABLE_ELEMENT:
+				return basicSetAnnotatableElement(null, msgs);
 		}
 		return super.eInverseRemove(otherEnd, featureID, msgs);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	@Override
-	public NotificationChain eBasicRemoveFromContainerFeature(NotificationChain msgs) {
-		switch (eContainerFeatureID()) {
-			case TreetaggerPackage.ANNOTATION__TOKEN:
-				return eInternalContainer().eInverseRemove(this, TreetaggerPackage.TOKEN__ANNOTATIONS, Token.class, msgs);
-		}
-		return super.eBasicRemoveFromContainerFeature(msgs);
 	}
 
 	/**
@@ -245,8 +257,9 @@ public class AnnotationImpl extends EObjectImpl implements Annotation {
 				return getName();
 			case TreetaggerPackage.ANNOTATION__VALUE:
 				return getValue();
-			case TreetaggerPackage.ANNOTATION__TOKEN:
-				return getToken();
+			case TreetaggerPackage.ANNOTATION__ANNOTATABLE_ELEMENT:
+				if (resolve) return getAnnotatableElement();
+				return basicGetAnnotatableElement();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -265,8 +278,8 @@ public class AnnotationImpl extends EObjectImpl implements Annotation {
 			case TreetaggerPackage.ANNOTATION__VALUE:
 				setValue((String)newValue);
 				return;
-			case TreetaggerPackage.ANNOTATION__TOKEN:
-				setToken((Token)newValue);
+			case TreetaggerPackage.ANNOTATION__ANNOTATABLE_ELEMENT:
+				setAnnotatableElement((AnnotatableElement)newValue);
 				return;
 		}
 		super.eSet(featureID, newValue);
@@ -286,8 +299,8 @@ public class AnnotationImpl extends EObjectImpl implements Annotation {
 			case TreetaggerPackage.ANNOTATION__VALUE:
 				setValue(VALUE_EDEFAULT);
 				return;
-			case TreetaggerPackage.ANNOTATION__TOKEN:
-				setToken((Token)null);
+			case TreetaggerPackage.ANNOTATION__ANNOTATABLE_ELEMENT:
+				setAnnotatableElement((AnnotatableElement)null);
 				return;
 		}
 		super.eUnset(featureID);
@@ -305,8 +318,8 @@ public class AnnotationImpl extends EObjectImpl implements Annotation {
 				return NAME_EDEFAULT == null ? name != null : !NAME_EDEFAULT.equals(name);
 			case TreetaggerPackage.ANNOTATION__VALUE:
 				return VALUE_EDEFAULT == null ? value != null : !VALUE_EDEFAULT.equals(value);
-			case TreetaggerPackage.ANNOTATION__TOKEN:
-				return getToken() != null;
+			case TreetaggerPackage.ANNOTATION__ANNOTATABLE_ELEMENT:
+				return annotatableElement != null;
 		}
 		return super.eIsSet(featureID);
 	}
@@ -327,6 +340,41 @@ public class AnnotationImpl extends EObjectImpl implements Annotation {
 		result.append(value);
 		result.append(')');
 		return result.toString();
+	}
+	
+	/**
+	 * TODO: describe
+	 */
+	public boolean equals(Object obj) {
+		if (this==obj) {
+			return true;
+		}
+		if (!(obj instanceof Annotation)) {
+			return false;
+		}
+		Annotation anno = (Annotation)obj;
+		
+		//##### compare name #####
+		if (((this.getName()!=null)&&(!(this.getName().equals(anno.getName())))) 
+			||((anno.getName()!=null)&&(!(anno.getName().equals(this.getName()))))) {
+			return false;
+		}
+		
+		//##### compare value #####
+		if (((this.getValue()!=null)&&(!(this.getValue().equals(anno.getValue())))) 
+			||((anno.getValue()!=null)&&(!(anno.getValue().equals(this.getValue()))))) {
+			return false;
+		}
+
+//		this would cause a circle
+//		//##### compare annotatable element #####
+//		if (((this.getAnnotatableElement()!=null)&&(!(this.getAnnotatableElement().equals(anno.getAnnotatableElement())))) 
+//			||((anno.getAnnotatableElement()!=null)&&(!(anno.getAnnotatableElement().equals(this.getAnnotatableElement()))))) {
+//			return false;
+//		}
+		
+		//okay fine
+		return true;
 	}
 
 } //AnnotationImpl

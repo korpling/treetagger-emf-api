@@ -91,6 +91,15 @@ public interface TreetaggerFactory extends EFactory {
 	AnyAnnotation createAnyAnnotation();
 
 	/**
+	 * Returns a new object of class '<em>Span</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Span</em>'.
+	 * @generated
+	 */
+	Span createSpan();
+
+	/**
 	 * Returns the package supported by this factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->

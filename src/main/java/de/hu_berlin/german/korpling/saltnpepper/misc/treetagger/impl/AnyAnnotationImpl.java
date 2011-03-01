@@ -68,5 +68,5 @@ public class AnyAnnotationImpl extends AnnotationImpl implements AnyAnnotation {
 	{
 		super.name= newAnyName;
 	}
-
+	
 } //AnyAnnotationImpl

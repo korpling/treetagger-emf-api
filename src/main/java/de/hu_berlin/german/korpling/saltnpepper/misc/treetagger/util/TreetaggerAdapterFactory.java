@@ -107,6 +107,14 @@ public class TreetaggerAdapterFactory extends AdapterFactoryImpl {
 				return createAnyAnnotationAdapter();
 			}
 			@Override
+			public Adapter caseSpan(Span object) {
+				return createSpanAdapter();
+			}
+			@Override
+			public Adapter caseAnnotatableElement(AnnotatableElement object) {
+				return createAnnotatableElementAdapter();
+			}
+			@Override
 			public Adapter defaultCase(EObject object) {
 				return createEObjectAdapter();
 			}
@@ -207,6 +215,34 @@ public class TreetaggerAdapterFactory extends AdapterFactoryImpl {
 	 * @generated
 	 */
 	public Adapter createAnyAnnotationAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Span <em>Span</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Span
+	 * @generated
+	 */
+	public Adapter createSpanAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.AnnotatableElement <em>Annotatable Element</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.AnnotatableElement
+	 * @generated
+	 */
+	public Adapter createAnnotatableElementAdapter() {
 		return null;
 	}
 

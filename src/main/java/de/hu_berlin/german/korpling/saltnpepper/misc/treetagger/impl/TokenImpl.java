@@ -25,8 +25,7 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-import org.eclipse.emf.ecore.impl.EObjectImpl;
-import org.eclipse.emf.ecore.util.EObjectContainmentWithInverseEList;
+import org.eclipse.emf.ecore.util.EObjectWithInverseResolvingEList;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.InternalEList;
 
@@ -34,6 +33,7 @@ import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Annotation;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Document;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.LemmaAnnotation;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.POSAnnotation;
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Span;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Token;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.TreetaggerPackage;
 
@@ -44,27 +44,17 @@ import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.TreetaggerPackag
  * <p>
  * The following features are implemented:
  * <ul>
- *   <li>{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.TokenImpl#getAnnotations <em>Annotations</em>}</li>
  *   <li>{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.TokenImpl#getText <em>Text</em>}</li>
  *   <li>{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.TokenImpl#getPosAnnotation <em>Pos Annotation</em>}</li>
  *   <li>{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.TokenImpl#getLemmaAnnotation <em>Lemma Annotation</em>}</li>
  *   <li>{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.TokenImpl#getDocument <em>Document</em>}</li>
+ *   <li>{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.TokenImpl#getSpans <em>Spans</em>}</li>
  * </ul>
  * </p>
  *
  * @generated
  */
-public class TokenImpl extends EObjectImpl implements Token {
-	/**
-	 * The cached value of the '{@link #getAnnotations() <em>Annotations</em>}' containment reference list.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see #getAnnotations()
-	 * @generated
-	 * @ordered
-	 */
-	protected EList<Annotation> annotations;
-
+public class TokenImpl extends AnnotatableElementImpl implements Token {
 	/**
 	 * The default value of the '{@link #getText() <em>Text</em>}' attribute.
 	 * <!-- begin-user-doc -->
@@ -86,6 +76,16 @@ public class TokenImpl extends EObjectImpl implements Token {
 	protected String text = TEXT_EDEFAULT;
 
 	/**
+	 * The cached value of the '{@link #getSpans() <em>Spans</em>}' reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getSpans()
+	 * @generated
+	 * @ordered
+	 */
+	protected EList<Span> spans;
+
+	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
@@ -102,18 +102,6 @@ public class TokenImpl extends EObjectImpl implements Token {
 	@Override
 	protected EClass eStaticClass() {
 		return TreetaggerPackage.Literals.TOKEN;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EList<Annotation> getAnnotations() {
-		if (annotations == null) {
-			annotations = new EObjectContainmentWithInverseEList<Annotation>(Annotation.class, this, TreetaggerPackage.TOKEN__ANNOTATIONS, TreetaggerPackage.ANNOTATION__TOKEN);
-		}
-		return annotations;
 	}
 
 	/**
@@ -190,7 +178,7 @@ public class TokenImpl extends EObjectImpl implements Token {
 		LemmaAnnotation lemmaAnno= null;
 		for (Annotation anno: this.getAnnotations())
 		{
-			if (anno instanceof POSAnnotation)
+			if (anno instanceof LemmaAnnotation)
 				lemmaAnno= (LemmaAnnotation) anno;
 		}
 		return(lemmaAnno);
@@ -251,16 +239,28 @@ public class TokenImpl extends EObjectImpl implements Token {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EList<Span> getSpans() {
+		if (spans == null) {
+			spans = new EObjectWithInverseResolvingEList.ManyInverse<Span>(Span.class, this, TreetaggerPackage.TOKEN__SPANS, TreetaggerPackage.SPAN__TOKENS);
+		}
+		return spans;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public NotificationChain eInverseAdd(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
 		switch (featureID) {
-			case TreetaggerPackage.TOKEN__ANNOTATIONS:
-				return ((InternalEList<InternalEObject>)(InternalEList<?>)getAnnotations()).basicAdd(otherEnd, msgs);
 			case TreetaggerPackage.TOKEN__DOCUMENT:
 				if (eInternalContainer() != null)
 					msgs = eBasicRemoveFromContainer(msgs);
 				return basicSetDocument((Document)otherEnd, msgs);
+			case TreetaggerPackage.TOKEN__SPANS:
+				return ((InternalEList<InternalEObject>)(InternalEList<?>)getSpans()).basicAdd(otherEnd, msgs);
 		}
 		return super.eInverseAdd(otherEnd, featureID, msgs);
 	}
@@ -273,10 +273,10 @@ public class TokenImpl extends EObjectImpl implements Token {
 	@Override
 	public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
 		switch (featureID) {
-			case TreetaggerPackage.TOKEN__ANNOTATIONS:
-				return ((InternalEList<?>)getAnnotations()).basicRemove(otherEnd, msgs);
 			case TreetaggerPackage.TOKEN__DOCUMENT:
 				return basicSetDocument(null, msgs);
+			case TreetaggerPackage.TOKEN__SPANS:
+				return ((InternalEList<?>)getSpans()).basicRemove(otherEnd, msgs);
 		}
 		return super.eInverseRemove(otherEnd, featureID, msgs);
 	}
@@ -303,8 +303,6 @@ public class TokenImpl extends EObjectImpl implements Token {
 	@Override
 	public Object eGet(int featureID, boolean resolve, boolean coreType) {
 		switch (featureID) {
-			case TreetaggerPackage.TOKEN__ANNOTATIONS:
-				return getAnnotations();
 			case TreetaggerPackage.TOKEN__TEXT:
 				return getText();
 			case TreetaggerPackage.TOKEN__POS_ANNOTATION:
@@ -315,6 +313,8 @@ public class TokenImpl extends EObjectImpl implements Token {
 				return basicGetLemmaAnnotation();
 			case TreetaggerPackage.TOKEN__DOCUMENT:
 				return getDocument();
+			case TreetaggerPackage.TOKEN__SPANS:
+				return getSpans();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -328,10 +328,6 @@ public class TokenImpl extends EObjectImpl implements Token {
 	@Override
 	public void eSet(int featureID, Object newValue) {
 		switch (featureID) {
-			case TreetaggerPackage.TOKEN__ANNOTATIONS:
-				getAnnotations().clear();
-				getAnnotations().addAll((Collection<? extends Annotation>)newValue);
-				return;
 			case TreetaggerPackage.TOKEN__TEXT:
 				setText((String)newValue);
 				return;
@@ -343,6 +339,10 @@ public class TokenImpl extends EObjectImpl implements Token {
 				return;
 			case TreetaggerPackage.TOKEN__DOCUMENT:
 				setDocument((Document)newValue);
+				return;
+			case TreetaggerPackage.TOKEN__SPANS:
+				getSpans().clear();
+				getSpans().addAll((Collection<? extends Span>)newValue);
 				return;
 		}
 		super.eSet(featureID, newValue);
@@ -356,9 +356,6 @@ public class TokenImpl extends EObjectImpl implements Token {
 	@Override
 	public void eUnset(int featureID) {
 		switch (featureID) {
-			case TreetaggerPackage.TOKEN__ANNOTATIONS:
-				getAnnotations().clear();
-				return;
 			case TreetaggerPackage.TOKEN__TEXT:
 				setText(TEXT_EDEFAULT);
 				return;
@@ -370,6 +367,9 @@ public class TokenImpl extends EObjectImpl implements Token {
 				return;
 			case TreetaggerPackage.TOKEN__DOCUMENT:
 				setDocument((Document)null);
+				return;
+			case TreetaggerPackage.TOKEN__SPANS:
+				getSpans().clear();
 				return;
 		}
 		super.eUnset(featureID);
@@ -383,8 +383,6 @@ public class TokenImpl extends EObjectImpl implements Token {
 	@Override
 	public boolean eIsSet(int featureID) {
 		switch (featureID) {
-			case TreetaggerPackage.TOKEN__ANNOTATIONS:
-				return annotations != null && !annotations.isEmpty();
 			case TreetaggerPackage.TOKEN__TEXT:
 				return TEXT_EDEFAULT == null ? text != null : !TEXT_EDEFAULT.equals(text);
 			case TreetaggerPackage.TOKEN__POS_ANNOTATION:
@@ -393,6 +391,8 @@ public class TokenImpl extends EObjectImpl implements Token {
 				return basicGetLemmaAnnotation() != null;
 			case TreetaggerPackage.TOKEN__DOCUMENT:
 				return getDocument() != null;
+			case TreetaggerPackage.TOKEN__SPANS:
+				return spans != null && !spans.isEmpty();
 		}
 		return super.eIsSet(featureID);
 	}
@@ -413,4 +413,26 @@ public class TokenImpl extends EObjectImpl implements Token {
 		return result.toString();
 	}
 
+	/**
+	 * TODO: describe
+	 */
+	public boolean equals(Object obj) {
+		if (this==obj) {
+			return true;
+		}
+		if (!(obj instanceof Token)) {
+			return false;
+		}
+		Token tok = (Token)obj;
+		
+		//##### compare text #####
+		if (((this.getText()!=null)&&(!(this.getText().equals(tok.getText())))) 
+			||((tok.getText()!=null)&&(!(tok.getText().equals(this.getText()))))) {
+			return false;
+		}
+
+		//okay fine, check super to compare Annotations
+		return super.equals(obj);
+	}
+	
 } //TokenImpl

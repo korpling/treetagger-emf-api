@@ -77,6 +77,7 @@ public class TreetaggerFactoryImpl extends EFactoryImpl implements TreetaggerFac
 			case TreetaggerPackage.POS_ANNOTATION: return createPOSAnnotation();
 			case TreetaggerPackage.LEMMA_ANNOTATION: return createLemmaAnnotation();
 			case TreetaggerPackage.ANY_ANNOTATION: return createAnyAnnotation();
+			case TreetaggerPackage.SPAN: return createSpan();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}
@@ -140,6 +141,16 @@ public class TreetaggerFactoryImpl extends EFactoryImpl implements TreetaggerFac
 	public AnyAnnotation createAnyAnnotation() {
 		AnyAnnotationImpl anyAnnotation = new AnyAnnotationImpl();
 		return anyAnnotation;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public Span createSpan() {
+		SpanImpl span = new SpanImpl();
+		return span;
 	}
 
 	/**

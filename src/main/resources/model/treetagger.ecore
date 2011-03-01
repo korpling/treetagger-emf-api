@@ -3,14 +3,12 @@
     xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="treetagger"
     nsURI="treetagger" nsPrefix="treetagger">
-  <eClassifiers xsi:type="ecore:EClass" name="Document">
+  <eClassifiers xsi:type="ecore:EClass" name="Document" eSuperTypes="#//AnnotatableElement">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="tokens" upperBound="-1"
         eType="#//Token" containment="true" eOpposite="#//Token/document"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Token">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
-        eType="#//Annotation" containment="true" eOpposite="#//Annotation/token"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Token" eSuperTypes="#//AnnotatableElement">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="text" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="posAnnotation" eType="#//POSAnnotation"
         volatile="true" transient="true" derived="true"/>
@@ -18,14 +16,25 @@
         volatile="true" transient="true" derived="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="document" eType="#//Document"
         eOpposite="#//Document/tokens"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="spans" upperBound="-1"
+        eType="#//Span" eOpposite="#//Span/tokens"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Annotation">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="token" eType="#//Token"
-        eOpposite="#//Token/annotations"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotatableElement" lowerBound="1"
+        eType="#//AnnotatableElement" eOpposite="#//AnnotatableElement/annotations"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="POSAnnotation" eSuperTypes="#//Annotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="LemmaAnnotation" eSuperTypes="#//Annotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="AnyAnnotation" eSuperTypes="#//Annotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Span" eSuperTypes="#//AnnotatableElement">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="tokens" lowerBound="1"
+        upperBound="-1" eType="#//Token" eOpposite="#//Token/spans"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AnnotatableElement" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
+        eType="#//Annotation" eOpposite="#//Annotation/annotatableElement"/>
+  </eClassifiers>
 </ecore:EPackage>

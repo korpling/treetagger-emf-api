@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <genmodel:GenModel xmi:version="2.0"
     xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
-    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/de.hu_berlin.german.korpling.saltnpepper.misc.TreetaggerModel/src/main/java"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/misc.TreetaggerModel/src/main/java"
     modelPluginID="de.hu_berlin.german.korpling.saltnpepper.misc.TreetaggerModel"
-    modelName="TreetaggerModel" modelPluginClass="" testsDirectory="/de.hu_berlin.german.korpling.saltnpepper.misc.TreetaggerModel.tests/src/test/java"
+    modelName="TreetaggerModel" modelPluginClass="" testsDirectory="/misc.TreetaggerModel/src/test/java"
     importerID="org.eclipse.emf.importer.ecore" complianceLevel="6.0" copyrightFields="false">
   <foreignModel>treetagger.ecore</foreignModel>
   <genPackages prefix="Treetagger" basePackage="de.hu_berlin.german.korpling.saltnpepper.misc"

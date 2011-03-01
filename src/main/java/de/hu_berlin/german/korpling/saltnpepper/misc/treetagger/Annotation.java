@@ -29,7 +29,7 @@ import org.eclipse.emf.ecore.EObject;
  * <ul>
  *   <li>{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Annotation#getName <em>Name</em>}</li>
  *   <li>{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Annotation#getValue <em>Value</em>}</li>
- *   <li>{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Annotation#getToken <em>Token</em>}</li>
+ *   <li>{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Annotation#getAnnotatableElement <em>Annotatable Element</em>}</li>
  * </ul>
  * </p>
  *
@@ -91,31 +91,31 @@ public interface Annotation extends EObject {
 	void setValue(String value);
 
 	/**
-	 * Returns the value of the '<em><b>Token</b></em>' container reference.
-	 * It is bidirectional and its opposite is '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Token#getAnnotations <em>Annotations</em>}'.
+	 * Returns the value of the '<em><b>Annotatable Element</b></em>' reference.
+	 * It is bidirectional and its opposite is '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.AnnotatableElement#getAnnotations <em>Annotations</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <p>
-	 * If the meaning of the '<em>Token</em>' container reference isn't clear,
+	 * If the meaning of the '<em>Annotatable Element</em>' reference isn't clear,
 	 * there really should be more of a description here...
 	 * </p>
 	 * <!-- end-user-doc -->
-	 * @return the value of the '<em>Token</em>' container reference.
-	 * @see #setToken(Token)
-	 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.TreetaggerPackage#getAnnotation_Token()
-	 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Token#getAnnotations
-	 * @model opposite="annotations" transient="false"
+	 * @return the value of the '<em>Annotatable Element</em>' reference.
+	 * @see #setAnnotatableElement(AnnotatableElement)
+	 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.TreetaggerPackage#getAnnotation_AnnotatableElement()
+	 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.AnnotatableElement#getAnnotations
+	 * @model opposite="annotations" required="true"
 	 * @generated
 	 */
-	Token getToken();
+	AnnotatableElement getAnnotatableElement();
 
 	/**
-	 * Sets the value of the '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Annotation#getToken <em>Token</em>}' container reference.
+	 * Sets the value of the '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Annotation#getAnnotatableElement <em>Annotatable Element</em>}' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @param value the new value of the '<em>Token</em>' container reference.
-	 * @see #getToken()
+	 * @param value the new value of the '<em>Annotatable Element</em>' reference.
+	 * @see #getAnnotatableElement()
 	 * @generated
 	 */
-	void setToken(Token value);
+	void setAnnotatableElement(AnnotatableElement value);
 
 } // Annotation

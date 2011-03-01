@@ -71,6 +71,34 @@ public interface TreetaggerPackage extends EPackage {
 	TreetaggerPackage eINSTANCE = de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.TreetaggerPackageImpl.init();
 
 	/**
+	 * The meta object id for the '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.AnnotatableElementImpl <em>Annotatable Element</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.AnnotatableElementImpl
+	 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.TreetaggerPackageImpl#getAnnotatableElement()
+	 * @generated
+	 */
+	int ANNOTATABLE_ELEMENT = 7;
+
+	/**
+	 * The feature id for the '<em><b>Annotations</b></em>' reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int ANNOTATABLE_ELEMENT__ANNOTATIONS = 0;
+
+	/**
+	 * The number of structural features of the '<em>Annotatable Element</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int ANNOTATABLE_ELEMENT_FEATURE_COUNT = 1;
+
+	/**
 	 * The meta object id for the '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.DocumentImpl <em>Document</em>}' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -81,13 +109,22 @@ public interface TreetaggerPackage extends EPackage {
 	int DOCUMENT = 0;
 
 	/**
+	 * The feature id for the '<em><b>Annotations</b></em>' reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int DOCUMENT__ANNOTATIONS = ANNOTATABLE_ELEMENT__ANNOTATIONS;
+
+	/**
 	 * The feature id for the '<em><b>Name</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int DOCUMENT__NAME = 0;
+	int DOCUMENT__NAME = ANNOTATABLE_ELEMENT_FEATURE_COUNT + 0;
 
 	/**
 	 * The feature id for the '<em><b>Tokens</b></em>' containment reference list.
@@ -96,7 +133,7 @@ public interface TreetaggerPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int DOCUMENT__TOKENS = 1;
+	int DOCUMENT__TOKENS = ANNOTATABLE_ELEMENT_FEATURE_COUNT + 1;
 
 	/**
 	 * The number of structural features of the '<em>Document</em>' class.
@@ -105,7 +142,7 @@ public interface TreetaggerPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int DOCUMENT_FEATURE_COUNT = 2;
+	int DOCUMENT_FEATURE_COUNT = ANNOTATABLE_ELEMENT_FEATURE_COUNT + 2;
 
 	/**
 	 * The meta object id for the '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.TokenImpl <em>Token</em>}' class.
@@ -118,13 +155,13 @@ public interface TreetaggerPackage extends EPackage {
 	int TOKEN = 1;
 
 	/**
-	 * The feature id for the '<em><b>Annotations</b></em>' containment reference list.
+	 * The feature id for the '<em><b>Annotations</b></em>' reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int TOKEN__ANNOTATIONS = 0;
+	int TOKEN__ANNOTATIONS = ANNOTATABLE_ELEMENT__ANNOTATIONS;
 
 	/**
 	 * The feature id for the '<em><b>Text</b></em>' attribute.
@@ -133,7 +170,7 @@ public interface TreetaggerPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int TOKEN__TEXT = 1;
+	int TOKEN__TEXT = ANNOTATABLE_ELEMENT_FEATURE_COUNT + 0;
 
 	/**
 	 * The feature id for the '<em><b>Pos Annotation</b></em>' reference.
@@ -142,7 +179,7 @@ public interface TreetaggerPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int TOKEN__POS_ANNOTATION = 2;
+	int TOKEN__POS_ANNOTATION = ANNOTATABLE_ELEMENT_FEATURE_COUNT + 1;
 
 	/**
 	 * The feature id for the '<em><b>Lemma Annotation</b></em>' reference.
@@ -151,7 +188,7 @@ public interface TreetaggerPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int TOKEN__LEMMA_ANNOTATION = 3;
+	int TOKEN__LEMMA_ANNOTATION = ANNOTATABLE_ELEMENT_FEATURE_COUNT + 2;
 
 	/**
 	 * The feature id for the '<em><b>Document</b></em>' container reference.
@@ -160,7 +197,16 @@ public interface TreetaggerPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int TOKEN__DOCUMENT = 4;
+	int TOKEN__DOCUMENT = ANNOTATABLE_ELEMENT_FEATURE_COUNT + 3;
+
+	/**
+	 * The feature id for the '<em><b>Spans</b></em>' reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TOKEN__SPANS = ANNOTATABLE_ELEMENT_FEATURE_COUNT + 4;
 
 	/**
 	 * The number of structural features of the '<em>Token</em>' class.
@@ -169,7 +215,7 @@ public interface TreetaggerPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int TOKEN_FEATURE_COUNT = 5;
+	int TOKEN_FEATURE_COUNT = ANNOTATABLE_ELEMENT_FEATURE_COUNT + 5;
 
 	/**
 	 * The meta object id for the '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.AnnotationImpl <em>Annotation</em>}' class.
@@ -200,13 +246,13 @@ public interface TreetaggerPackage extends EPackage {
 	int ANNOTATION__VALUE = 1;
 
 	/**
-	 * The feature id for the '<em><b>Token</b></em>' container reference.
+	 * The feature id for the '<em><b>Annotatable Element</b></em>' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int ANNOTATION__TOKEN = 2;
+	int ANNOTATION__ANNOTATABLE_ELEMENT = 2;
 
 	/**
 	 * The number of structural features of the '<em>Annotation</em>' class.
@@ -246,13 +292,13 @@ public interface TreetaggerPackage extends EPackage {
 	int POS_ANNOTATION__VALUE = ANNOTATION__VALUE;
 
 	/**
-	 * The feature id for the '<em><b>Token</b></em>' container reference.
+	 * The feature id for the '<em><b>Annotatable Element</b></em>' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int POS_ANNOTATION__TOKEN = ANNOTATION__TOKEN;
+	int POS_ANNOTATION__ANNOTATABLE_ELEMENT = ANNOTATION__ANNOTATABLE_ELEMENT;
 
 	/**
 	 * The number of structural features of the '<em>POS Annotation</em>' class.
@@ -292,13 +338,13 @@ public interface TreetaggerPackage extends EPackage {
 	int LEMMA_ANNOTATION__VALUE = ANNOTATION__VALUE;
 
 	/**
-	 * The feature id for the '<em><b>Token</b></em>' container reference.
+	 * The feature id for the '<em><b>Annotatable Element</b></em>' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int LEMMA_ANNOTATION__TOKEN = ANNOTATION__TOKEN;
+	int LEMMA_ANNOTATION__ANNOTATABLE_ELEMENT = ANNOTATION__ANNOTATABLE_ELEMENT;
 
 	/**
 	 * The number of structural features of the '<em>Lemma Annotation</em>' class.
@@ -339,13 +385,13 @@ public interface TreetaggerPackage extends EPackage {
 	int ANY_ANNOTATION__VALUE = ANNOTATION__VALUE;
 
 	/**
-	 * The feature id for the '<em><b>Token</b></em>' container reference.
+	 * The feature id for the '<em><b>Annotatable Element</b></em>' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int ANY_ANNOTATION__TOKEN = ANNOTATION__TOKEN;
+	int ANY_ANNOTATION__ANNOTATABLE_ELEMENT = ANNOTATION__ANNOTATABLE_ELEMENT;
 
 	/**
 	 * The number of structural features of the '<em>Any Annotation</em>' class.
@@ -355,6 +401,53 @@ public interface TreetaggerPackage extends EPackage {
 	 * @ordered
 	 */
 	int ANY_ANNOTATION_FEATURE_COUNT = ANNOTATION_FEATURE_COUNT + 0;
+
+
+	/**
+	 * The meta object id for the '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.SpanImpl <em>Span</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.SpanImpl
+	 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.TreetaggerPackageImpl#getSpan()
+	 * @generated
+	 */
+	int SPAN = 6;
+
+	/**
+	 * The feature id for the '<em><b>Annotations</b></em>' reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SPAN__ANNOTATIONS = ANNOTATABLE_ELEMENT__ANNOTATIONS;
+
+	/**
+	 * The feature id for the '<em><b>Name</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SPAN__NAME = ANNOTATABLE_ELEMENT_FEATURE_COUNT + 0;
+
+	/**
+	 * The feature id for the '<em><b>Tokens</b></em>' reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SPAN__TOKENS = ANNOTATABLE_ELEMENT_FEATURE_COUNT + 1;
+
+	/**
+	 * The number of structural features of the '<em>Span</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SPAN_FEATURE_COUNT = ANNOTATABLE_ELEMENT_FEATURE_COUNT + 2;
 
 
 	/**
@@ -398,17 +491,6 @@ public interface TreetaggerPackage extends EPackage {
 	 * @generated
 	 */
 	EClass getToken();
-
-	/**
-	 * Returns the meta object for the containment reference list '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Token#getAnnotations <em>Annotations</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the containment reference list '<em>Annotations</em>'.
-	 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Token#getAnnotations()
-	 * @see #getToken()
-	 * @generated
-	 */
-	EReference getToken_Annotations();
 
 	/**
 	 * Returns the meta object for the attribute '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Token#getText <em>Text</em>}'.
@@ -455,6 +537,17 @@ public interface TreetaggerPackage extends EPackage {
 	EReference getToken_Document();
 
 	/**
+	 * Returns the meta object for the reference list '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Token#getSpans <em>Spans</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference list '<em>Spans</em>'.
+	 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Token#getSpans()
+	 * @see #getToken()
+	 * @generated
+	 */
+	EReference getToken_Spans();
+
+	/**
 	 * Returns the meta object for class '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Annotation <em>Annotation</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -487,15 +580,15 @@ public interface TreetaggerPackage extends EPackage {
 	EAttribute getAnnotation_Value();
 
 	/**
-	 * Returns the meta object for the container reference '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Annotation#getToken <em>Token</em>}'.
+	 * Returns the meta object for the reference '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Annotation#getAnnotatableElement <em>Annotatable Element</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the meta object for the container reference '<em>Token</em>'.
-	 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Annotation#getToken()
+	 * @return the meta object for the reference '<em>Annotatable Element</em>'.
+	 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Annotation#getAnnotatableElement()
 	 * @see #getAnnotation()
 	 * @generated
 	 */
-	EReference getAnnotation_Token();
+	EReference getAnnotation_AnnotatableElement();
 
 	/**
 	 * Returns the meta object for class '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.POSAnnotation <em>POS Annotation</em>}'.
@@ -526,6 +619,59 @@ public interface TreetaggerPackage extends EPackage {
 	 * @generated
 	 */
 	EClass getAnyAnnotation();
+
+	/**
+	 * Returns the meta object for class '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Span <em>Span</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Span</em>'.
+	 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Span
+	 * @generated
+	 */
+	EClass getSpan();
+
+	/**
+	 * Returns the meta object for the attribute '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Span#getName <em>Name</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Name</em>'.
+	 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Span#getName()
+	 * @see #getSpan()
+	 * @generated
+	 */
+	EAttribute getSpan_Name();
+
+	/**
+	 * Returns the meta object for the reference list '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Span#getTokens <em>Tokens</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference list '<em>Tokens</em>'.
+	 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Span#getTokens()
+	 * @see #getSpan()
+	 * @generated
+	 */
+	EReference getSpan_Tokens();
+
+	/**
+	 * Returns the meta object for class '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.AnnotatableElement <em>Annotatable Element</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Annotatable Element</em>'.
+	 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.AnnotatableElement
+	 * @generated
+	 */
+	EClass getAnnotatableElement();
+
+	/**
+	 * Returns the meta object for the reference list '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.AnnotatableElement#getAnnotations <em>Annotations</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference list '<em>Annotations</em>'.
+	 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.AnnotatableElement#getAnnotations()
+	 * @see #getAnnotatableElement()
+	 * @generated
+	 */
+	EReference getAnnotatableElement_Annotations();
 
 	/**
 	 * Returns the factory that creates the instances of the model.
@@ -586,14 +732,6 @@ public interface TreetaggerPackage extends EPackage {
 		EClass TOKEN = eINSTANCE.getToken();
 
 		/**
-		 * The meta object literal for the '<em><b>Annotations</b></em>' containment reference list feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EReference TOKEN__ANNOTATIONS = eINSTANCE.getToken_Annotations();
-
-		/**
 		 * The meta object literal for the '<em><b>Text</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
@@ -626,6 +764,14 @@ public interface TreetaggerPackage extends EPackage {
 		EReference TOKEN__DOCUMENT = eINSTANCE.getToken_Document();
 
 		/**
+		 * The meta object literal for the '<em><b>Spans</b></em>' reference list feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference TOKEN__SPANS = eINSTANCE.getToken_Spans();
+
+		/**
 		 * The meta object literal for the '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.AnnotationImpl <em>Annotation</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
@@ -652,12 +798,12 @@ public interface TreetaggerPackage extends EPackage {
 		EAttribute ANNOTATION__VALUE = eINSTANCE.getAnnotation_Value();
 
 		/**
-		 * The meta object literal for the '<em><b>Token</b></em>' container reference feature.
+		 * The meta object literal for the '<em><b>Annotatable Element</b></em>' reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EReference ANNOTATION__TOKEN = eINSTANCE.getAnnotation_Token();
+		EReference ANNOTATION__ANNOTATABLE_ELEMENT = eINSTANCE.getAnnotation_AnnotatableElement();
 
 		/**
 		 * The meta object literal for the '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.POSAnnotationImpl <em>POS Annotation</em>}' class.
@@ -688,6 +834,50 @@ public interface TreetaggerPackage extends EPackage {
 		 * @generated
 		 */
 		EClass ANY_ANNOTATION = eINSTANCE.getAnyAnnotation();
+
+		/**
+		 * The meta object literal for the '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.SpanImpl <em>Span</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.SpanImpl
+		 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.TreetaggerPackageImpl#getSpan()
+		 * @generated
+		 */
+		EClass SPAN = eINSTANCE.getSpan();
+
+		/**
+		 * The meta object literal for the '<em><b>Name</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SPAN__NAME = eINSTANCE.getSpan_Name();
+
+		/**
+		 * The meta object literal for the '<em><b>Tokens</b></em>' reference list feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference SPAN__TOKENS = eINSTANCE.getSpan_Tokens();
+
+		/**
+		 * The meta object literal for the '{@link de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.AnnotatableElementImpl <em>Annotatable Element</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.AnnotatableElementImpl
+		 * @see de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl.TreetaggerPackageImpl#getAnnotatableElement()
+		 * @generated
+		 */
+		EClass ANNOTATABLE_ELEMENT = eINSTANCE.getAnnotatableElement();
+
+		/**
+		 * The meta object literal for the '<em><b>Annotations</b></em>' reference list feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference ANNOTATABLE_ELEMENT__ANNOTATIONS = eINSTANCE.getAnnotatableElement_Annotations();
 
 	}
 

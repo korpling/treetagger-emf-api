@@ -101,12 +101,14 @@ public class TreetaggerSwitch<T> {
 			case TreetaggerPackage.DOCUMENT: {
 				Document document = (Document)theEObject;
 				T result = caseDocument(document);
+				if (result == null) result = caseAnnotatableElement(document);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
 			case TreetaggerPackage.TOKEN: {
 				Token token = (Token)theEObject;
 				T result = caseToken(token);
+				if (result == null) result = caseAnnotatableElement(token);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
@@ -134,6 +136,19 @@ public class TreetaggerSwitch<T> {
 				AnyAnnotation anyAnnotation = (AnyAnnotation)theEObject;
 				T result = caseAnyAnnotation(anyAnnotation);
 				if (result == null) result = caseAnnotation(anyAnnotation);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case TreetaggerPackage.SPAN: {
+				Span span = (Span)theEObject;
+				T result = caseSpan(span);
+				if (result == null) result = caseAnnotatableElement(span);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case TreetaggerPackage.ANNOTATABLE_ELEMENT: {
+				AnnotatableElement annotatableElement = (AnnotatableElement)theEObject;
+				T result = caseAnnotatableElement(annotatableElement);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
@@ -228,6 +243,36 @@ public class TreetaggerSwitch<T> {
 	 * @generated
 	 */
 	public T caseAnyAnnotation(AnyAnnotation object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Span</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Span</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseSpan(Span object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Annotatable Element</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Annotatable Element</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseAnnotatableElement(AnnotatableElement object) {
 		return null;
 	}
 

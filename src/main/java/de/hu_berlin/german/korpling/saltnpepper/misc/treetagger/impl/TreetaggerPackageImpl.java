@@ -17,11 +17,13 @@
  */
 package de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.impl;
 
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.AnnotatableElement;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Annotation;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.AnyAnnotation;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Document;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.LemmaAnnotation;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.POSAnnotation;
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Span;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Token;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.TreetaggerFactory;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.TreetaggerPackage;
@@ -81,6 +83,20 @@ public class TreetaggerPackageImpl extends EPackageImpl implements TreetaggerPac
 	 * @generated
 	 */
 	private EClass anyAnnotationEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass spanEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass annotatableElementEClass = null;
 
 	/**
 	 * Creates an instance of the model <b>Package</b>, registered with
@@ -184,17 +200,8 @@ public class TreetaggerPackageImpl extends EPackageImpl implements TreetaggerPac
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EReference getToken_Annotations() {
-		return (EReference)tokenEClass.getEStructuralFeatures().get(0);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public EAttribute getToken_Text() {
-		return (EAttribute)tokenEClass.getEStructuralFeatures().get(1);
+		return (EAttribute)tokenEClass.getEStructuralFeatures().get(0);
 	}
 
 	/**
@@ -203,7 +210,7 @@ public class TreetaggerPackageImpl extends EPackageImpl implements TreetaggerPac
 	 * @generated
 	 */
 	public EReference getToken_PosAnnotation() {
-		return (EReference)tokenEClass.getEStructuralFeatures().get(2);
+		return (EReference)tokenEClass.getEStructuralFeatures().get(1);
 	}
 
 	/**
@@ -212,7 +219,7 @@ public class TreetaggerPackageImpl extends EPackageImpl implements TreetaggerPac
 	 * @generated
 	 */
 	public EReference getToken_LemmaAnnotation() {
-		return (EReference)tokenEClass.getEStructuralFeatures().get(3);
+		return (EReference)tokenEClass.getEStructuralFeatures().get(2);
 	}
 
 	/**
@@ -221,6 +228,15 @@ public class TreetaggerPackageImpl extends EPackageImpl implements TreetaggerPac
 	 * @generated
 	 */
 	public EReference getToken_Document() {
+		return (EReference)tokenEClass.getEStructuralFeatures().get(3);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getToken_Spans() {
 		return (EReference)tokenEClass.getEStructuralFeatures().get(4);
 	}
 
@@ -256,7 +272,7 @@ public class TreetaggerPackageImpl extends EPackageImpl implements TreetaggerPac
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EReference getAnnotation_Token() {
+	public EReference getAnnotation_AnnotatableElement() {
 		return (EReference)annotationEClass.getEStructuralFeatures().get(2);
 	}
 
@@ -292,6 +308,51 @@ public class TreetaggerPackageImpl extends EPackageImpl implements TreetaggerPac
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EClass getSpan() {
+		return spanEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSpan_Name() {
+		return (EAttribute)spanEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getSpan_Tokens() {
+		return (EReference)spanEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getAnnotatableElement() {
+		return annotatableElementEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getAnnotatableElement_Annotations() {
+		return (EReference)annotatableElementEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public TreetaggerFactory getTreetaggerFactory() {
 		return (TreetaggerFactory)getEFactoryInstance();
 	}
@@ -320,22 +381,29 @@ public class TreetaggerPackageImpl extends EPackageImpl implements TreetaggerPac
 		createEReference(documentEClass, DOCUMENT__TOKENS);
 
 		tokenEClass = createEClass(TOKEN);
-		createEReference(tokenEClass, TOKEN__ANNOTATIONS);
 		createEAttribute(tokenEClass, TOKEN__TEXT);
 		createEReference(tokenEClass, TOKEN__POS_ANNOTATION);
 		createEReference(tokenEClass, TOKEN__LEMMA_ANNOTATION);
 		createEReference(tokenEClass, TOKEN__DOCUMENT);
+		createEReference(tokenEClass, TOKEN__SPANS);
 
 		annotationEClass = createEClass(ANNOTATION);
 		createEAttribute(annotationEClass, ANNOTATION__NAME);
 		createEAttribute(annotationEClass, ANNOTATION__VALUE);
-		createEReference(annotationEClass, ANNOTATION__TOKEN);
+		createEReference(annotationEClass, ANNOTATION__ANNOTATABLE_ELEMENT);
 
 		posAnnotationEClass = createEClass(POS_ANNOTATION);
 
 		lemmaAnnotationEClass = createEClass(LEMMA_ANNOTATION);
 
 		anyAnnotationEClass = createEClass(ANY_ANNOTATION);
+
+		spanEClass = createEClass(SPAN);
+		createEAttribute(spanEClass, SPAN__NAME);
+		createEReference(spanEClass, SPAN__TOKENS);
+
+		annotatableElementEClass = createEClass(ANNOTATABLE_ELEMENT);
+		createEReference(annotatableElementEClass, ANNOTATABLE_ELEMENT__ANNOTATIONS);
 	}
 
 	/**
@@ -366,9 +434,12 @@ public class TreetaggerPackageImpl extends EPackageImpl implements TreetaggerPac
 		// Set bounds for type parameters
 
 		// Add supertypes to classes
+		documentEClass.getESuperTypes().add(this.getAnnotatableElement());
+		tokenEClass.getESuperTypes().add(this.getAnnotatableElement());
 		posAnnotationEClass.getESuperTypes().add(this.getAnnotation());
 		lemmaAnnotationEClass.getESuperTypes().add(this.getAnnotation());
 		anyAnnotationEClass.getESuperTypes().add(this.getAnnotation());
+		spanEClass.getESuperTypes().add(this.getAnnotatableElement());
 
 		// Initialize classes and features; add operations and parameters
 		initEClass(documentEClass, Document.class, "Document", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
@@ -376,22 +447,29 @@ public class TreetaggerPackageImpl extends EPackageImpl implements TreetaggerPac
 		initEReference(getDocument_Tokens(), this.getToken(), this.getToken_Document(), "tokens", null, 0, -1, Document.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(tokenEClass, Token.class, "Token", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-		initEReference(getToken_Annotations(), this.getAnnotation(), this.getAnnotation_Token(), "annotations", null, 0, -1, Token.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getToken_Text(), ecorePackage.getEString(), "text", null, 0, 1, Token.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getToken_PosAnnotation(), this.getPOSAnnotation(), null, "posAnnotation", null, 0, 1, Token.class, IS_TRANSIENT, IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, IS_DERIVED, IS_ORDERED);
 		initEReference(getToken_LemmaAnnotation(), this.getLemmaAnnotation(), null, "lemmaAnnotation", null, 0, 1, Token.class, IS_TRANSIENT, IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, IS_DERIVED, IS_ORDERED);
 		initEReference(getToken_Document(), this.getDocument(), this.getDocument_Tokens(), "document", null, 0, 1, Token.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getToken_Spans(), this.getSpan(), this.getSpan_Tokens(), "spans", null, 0, -1, Token.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(annotationEClass, Annotation.class, "Annotation", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getAnnotation_Name(), ecorePackage.getEString(), "name", null, 0, 1, Annotation.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getAnnotation_Value(), ecorePackage.getEString(), "value", null, 0, 1, Annotation.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEReference(getAnnotation_Token(), this.getToken(), this.getToken_Annotations(), "token", null, 0, 1, Annotation.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getAnnotation_AnnotatableElement(), this.getAnnotatableElement(), this.getAnnotatableElement_Annotations(), "annotatableElement", null, 1, 1, Annotation.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(posAnnotationEClass, POSAnnotation.class, "POSAnnotation", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
 		initEClass(lemmaAnnotationEClass, LemmaAnnotation.class, "LemmaAnnotation", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
 		initEClass(anyAnnotationEClass, AnyAnnotation.class, "AnyAnnotation", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+		initEClass(spanEClass, Span.class, "Span", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getSpan_Name(), ecorePackage.getEString(), "name", null, 0, 1, Span.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getSpan_Tokens(), this.getToken(), this.getToken_Spans(), "tokens", null, 1, -1, Span.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(annotatableElementEClass, AnnotatableElement.class, "AnnotatableElement", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getAnnotatableElement_Annotations(), this.getAnnotation(), this.getAnnotation_AnnotatableElement(), "annotations", null, 0, -1, AnnotatableElement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		// Create resource
 		createResource(eNS_URI);
