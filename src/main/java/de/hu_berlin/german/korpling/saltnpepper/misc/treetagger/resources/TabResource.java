@@ -46,7 +46,7 @@ public class TabResource extends ResourceImpl
 	/**
 	 * Seperator which seperates columns
 	 */
-	private String seperator= "\t";
+	private String separator= "\t";
 	
 	/**
 	 * default input and output file encodings
@@ -96,8 +96,8 @@ public class TabResource extends ResourceImpl
 	 */
 	public void save(java.util.Map<?,?> options) throws java.io.IOException
 	{
-		String metaTagName = properties.getProperty("treetaggermodel.metaTagName", "meta");
-		String fileEncodingName = properties.getProperty("treetaggermodel.outputFileEncodingName",defaultOutputFileEncodingName);
+		String metaTagName = properties.getProperty("treetaggerModule.metaTagName", "meta");
+		String fileEncodingName = properties.getProperty("treetaggerModule.outputFileEncodingName",defaultOutputFileEncodingName);
 		
 		BufferedWriter fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.getURI().toFileString()), fileEncodingName));
 		
@@ -161,7 +161,7 @@ public class TabResource extends ResourceImpl
 						{
 							for (Annotation anno: token.getAnnotations())
 							{
-								fileWriter.write(this.seperator + anno.getValue());
+								fileWriter.write(this.separator + anno.getValue());
 							}
 						}	
 						fileWriter.write("\n");
@@ -214,7 +214,7 @@ public class TabResource extends ResourceImpl
 	{
 		String metaTagName = properties.getProperty("treetaggermodel.metaTagName", "meta");
 		//TODO: default: utf8
-		String fileEncodingName = properties.getProperty("treetaggermodel.inputFileEncodingName",defaultInputFileEncodingName);
+		String fileEncodingName = properties.getProperty("treetaggerModule.inputFileEncodingName",defaultInputFileEncodingName);
 		
 		if (this.getURI()== null) {
 			String errorMessage = "Cannot load any resource, because no uri is given.";
@@ -274,8 +274,15 @@ public class TabResource extends ResourceImpl
 					betweenDocuments = true;
 				}
 				else {
-					boolean closingTagFound = false;
+					boolean closingTagFound = (openSpans.size()==0);
 					for (int i=openSpans.size()-1;i>=0||!closingTagFound;i--) {
+
+						//TODO: this is only temporary because i cant concentrate any more - problem is sometimes trying to .get(-1) 
+						if (i<0) {
+							closingTagFound=true;
+							break;
+						}
+						
 						if (openSpans.get(i).getName().equalsIgnoreCase(closingTagName)) {
 							closingTagFound = true;
 							Span openSpan = openSpans.get(i);
@@ -295,7 +302,7 @@ public class TabResource extends ResourceImpl
 			
 			else {
 				if (!betweenDocuments) {
-					String[] tuple = line.split(seperator);
+					String[] tuple = line.split(separator);
 					Token token= TreetaggerFactory.eINSTANCE.createToken();
 					document.getTokens().add(token);
 					token.setText(tuple[0]);
