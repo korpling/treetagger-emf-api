@@ -49,11 +49,11 @@ public class TabResource extends ResourceImpl
 	private String separator= "\t";
 	
 	/**
-	 * default input and output file encodings
+	 * default values
 	 */
 	private String defaultOutputFileEncodingName = "UTF-8";
-	//TODO: UTF8!
-	private String defaultInputFileEncodingName  = "ISO-8859-2";
+	private String defaultInputFileEncodingName  = "UTF-8";
+	private String defaultMetaTagName = "meta";
 	
 	//----------------------------------------------------------
 	private LogService logService = null;
@@ -68,19 +68,18 @@ public class TabResource extends ResourceImpl
 
 	private void log(int logLevel, String logText) {
 		if (this.getLogService()!=null) {
-			this.getLogService().log(logLevel, logText);
+			this.getLogService().log(logLevel, "<TabResource>: " + logText);
 		}
 	}
 	
 	private void logError  (String logText) { this.log(LogService.LOG_ERROR,   logText); }
 	private void logWarning(String logText) { this.log(LogService.LOG_WARNING, logText); }
-	@SuppressWarnings("unused")
 	private void logInfo   (String logText) { this.log(LogService.LOG_INFO,    logText); }
 	@SuppressWarnings("unused")
 	private void logDebug  (String logText) { this.log(LogService.LOG_DEBUG,   logText); }
 	//----------------------------------------------------------
 	
-	private Properties properties = new Properties();
+	private Properties properties = null;
 	
 	public Properties getProperties() {
 		return properties;
@@ -96,8 +95,8 @@ public class TabResource extends ResourceImpl
 	 */
 	public void save(java.util.Map<?,?> options) throws java.io.IOException
 	{
-		String metaTagName = properties.getProperty("treetaggerModule.metaTagName", "meta");
-		String fileEncodingName = properties.getProperty("treetaggerModule.outputFileEncodingName",defaultOutputFileEncodingName);
+		String metaTagName = properties.getProperty("treetaggerModule.metaTagName".trim(), "meta");
+		String fileEncodingName = properties.getProperty("treetaggerModule.outputFileEncodingName".trim(),defaultOutputFileEncodingName);
 		
 		BufferedWriter fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.getURI().toFileString()), fileEncodingName));
 		
@@ -191,13 +190,29 @@ public class TabResource extends ResourceImpl
 	}
 	
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 * auxilliary method to annotate an annotatableElement with attributes from an XML opening tag 
 	 * @param XMLOpeningTag
 	 * @param annotatableElement
 	 */
-	private void addAttributesAsAnnotations(String XMLOpeningTag, AnnotatableElement annotatableElement) {
-		ArrayList<SimpleEntry<String,String>> attributeValueList = XMLUtils.getAttributeValueList(XMLOpeningTag);
+	private void addAttributesAsAnnotations(String tag, AnnotatableElement annotatableElement) {
+		ArrayList<SimpleEntry<String,String>> attributeValueList = XMLUtils.getAttributeValueList(tag);
 		for (int i=0; i<attributeValueList.size();i++) {
 			SimpleEntry<String,String> entry = attributeValueList.get(i); 
 			Annotation annotation = TreetaggerFactory.eINSTANCE.createAnnotation();
@@ -207,14 +222,174 @@ public class TabResource extends ResourceImpl
 		}
 	}
 	
+	private Document currentDocument = null; 
+	private ArrayList<Span> openSpans = new ArrayList<Span>();
+	private int fileLineCount = 0;
+	private boolean xmlDocumentOpen = false;
+	
+	private void beginDocument(String openingTag) {
+		if (this.currentDocument!=null) {
+			this.endDocument();
+		}
+		this.currentDocument = TreetaggerFactory.eINSTANCE.createDocument();
+		this.xmlDocumentOpen = (openingTag!=null);  
+		if (this.xmlDocumentOpen) {
+			addAttributesAsAnnotations(openingTag, this.currentDocument);
+		}
+	}
+	
+	private void endDocument() {
+		if (this.currentDocument!=null) {
+			if (!this.openSpans.isEmpty()) {
+				String openSpanNames = "";
+				for (int spanIndex=0;spanIndex<this.openSpans.size();spanIndex++) {
+					Span span = this.openSpans.get(spanIndex);
+					openSpanNames += ",</" + span.getName() + ">";
+					for (int tokenIndex=span.getTokens().size()-1;tokenIndex>=0;tokenIndex--) {
+						Token token = span.getTokens().get(tokenIndex);
+						if (token.getSpans().contains(span)) {
+							token.getSpans().remove(span);
+						}
+						else {
+							break;
+						}
+					}
+				}
+				logWarning(String.format("input file '%s' (line %d): missing closing tag(s) '%s'. tag(s) will be ignored!",this.getURI().lastSegment(),this.fileLineCount,openSpanNames.substring(1)));
+			}
+			if (this.xmlDocumentOpen) {
+				logWarning(String.format("input file '%s' (line %d): missing document closing tag. document will be ignored!",this.getURI().lastSegment(),this.fileLineCount));
+			} 
+			else {
+				this.getContents().add(this.currentDocument);
+			}
+			
+			this.currentDocument=null;
+			this.xmlDocumentOpen=false;
+		}
+		this.openSpans.clear();
+	}
+	
+	private void beginSpan(String spanName, String openingTag) {
+		if (this.currentDocument==null) {
+			this.beginDocument(null);
+		}
+		Span span = TreetaggerFactory.eINSTANCE.createSpan();
+		this.openSpans.add(0,span);
+		span.setName(spanName);
+		addAttributesAsAnnotations(openingTag, span);
+	}
+
+	private void endSpan(String spanName) {
+		if (this.currentDocument==null) {
+			logWarning(String.format("input file '%s' (line '%d'): closing tag '</%s>' out of nowhere. tag will be ignored!",this.getURI().lastSegment(),this.fileLineCount,spanName));
+		} 
+		else {
+			boolean matchingOpeningTagExists = false;
+			for (int i=0; i<this.openSpans.size(); i++) {
+				Span openSpan = this.openSpans.get(i);
+				if (openSpan.getName().equalsIgnoreCase(spanName)) {
+					matchingOpeningTagExists = true;
+					if (openSpan.getTokens().isEmpty()) {
+						logWarning(String.format("input file '%s' (line %d): no tokens contained in span '<%s>'. span will be ignored!",this.getURI().lastSegment(),this.fileLineCount,openSpan.getName()));	
+					}
+					this.openSpans.remove(i);
+					break;
+				}
+			}
+			if (!matchingOpeningTagExists) {
+				logWarning(String.format("input file '%s' (line %d): no corresponding opening tag found for closing tag '</%s>'. tag will be ignored!",this.getURI().lastSegment(),this.fileLineCount,spanName));
+			}
+		}
+	}
+	
+	private void addDataRow(String row) {
+		if (row!="") {
+			if (this.currentDocument==null) {
+				this.beginDocument(null);
+			}
+			String[] tuple = row.split(separator);
+			Token token= TreetaggerFactory.eINSTANCE.createToken();
+			this.currentDocument.getTokens().add(token);
+			token.setText(tuple[0]);
+			for (int i=0;i<this.openSpans.size();i++) {
+				Span span = openSpans.get(i);
+				token.getSpans().add(span);
+				span.getTokens().add(token);
+			}
+			if (tuple.length>1) {
+				POSAnnotation posAnno= TreetaggerFactory.eINSTANCE.createPOSAnnotation();
+				posAnno.setValue(tuple[1]);
+				token.getAnnotations().add(posAnno);
+				if (tuple.length>2) { 
+					LemmaAnnotation lemmaAnno= TreetaggerFactory.eINSTANCE.createLemmaAnnotation();
+					lemmaAnno.setValue(tuple[2]);
+					token.getAnnotations().add(lemmaAnno);
+					if (tuple.length>3) {
+						logWarning(String.format("input file '%s' (line %d): %d data columns found, but only 3 expected. additional columns will be ignored! ",this.getURI().lastSegment(),this.fileLineCount,tuple.length));
+					}
+				}
+			}
+		}
+	}
+	
+	private void setDocumentNames() {
+		String documentBaseName = this.getURI().lastSegment().split("[.]")[0];
+		int documentCount = this.getContents().size();
+		switch (documentCount) {
+			case 0: 
+				logWarning(String.format("no valid document data contained in file '%s'",this.getURI().toFileString())); 
+				break;
+			case 1:
+				//set simple document name
+				((Document)this.getContents().get(0)).setName(documentBaseName);
+				break;
+			default:
+				//set document names with leading zeros for number extensions
+				int documentCountDigits = String.valueOf(documentCount).length();
+				for (int docIndex=0;docIndex<documentCount;docIndex++) {
+					String docNumber = Integer.toString(docIndex);
+					while (docNumber.length()<documentCountDigits) {
+						docNumber = "0" + docNumber;
+					}
+					((Document)this.getContents().get(docIndex)).setName(documentBaseName + "_" + docNumber);
+				}
+				break;
+		}
+	}
+	
 	/**
 	 * Loads a resource into treetagger-model from tab-seperated file.
 	 */
 	public void load(java.util.Map<?,?> options) throws IOException
 	{
-		String metaTagName = properties.getProperty("treetaggermodel.metaTagName", "meta");
-		//TODO: default: utf8
-		String fileEncodingName = properties.getProperty("treetaggerModule.inputFileEncodingName",defaultInputFileEncodingName);
+		this.getContents().clear();
+		this.openSpans.clear();
+		this.currentDocument = null; 
+		this.fileLineCount = 0;
+		this.xmlDocumentOpen = false;
+		
+		if (options!=null) {
+			String logServiceKey = "LOGSERVICE";
+			if (options.containsKey(logServiceKey)) {
+				this.setLogService((LogService)options.get(logServiceKey));		
+			}
+			String propertiesKey = "PROPERTIES";
+			if (options.containsKey(propertiesKey)) {
+				this.setProperties((Properties)options.get(propertiesKey));		
+			}
+		}
+		
+		if (this.getProperties()==null) {
+			logWarning("no properties given for loading of resource. using defaults.");
+			this.setProperties(new Properties());
+		}
+		
+		String metaTagName = properties.getProperty("treetagger.metaTagName", defaultMetaTagName);
+		logInfo(String.format("using meta tag '%s'",metaTagName));
+		
+		String fileEncodingName = properties.getProperty("treetagger.inputFileEncodingName",defaultInputFileEncodingName);
+		logInfo(String.format("using input file encoding '%s'",fileEncodingName));
 		
 		if (this.getURI()== null) {
 			String errorMessage = "Cannot load any resource, because no uri is given.";
@@ -222,116 +397,37 @@ public class TabResource extends ResourceImpl
 			throw new NullPointerException(errorMessage);
 		}
 
-		Document document = null;
-		int documentCount = 0;
-		String documentBaseName = null;
-		ArrayList<Span> openSpans = new ArrayList<Span>();
 		BufferedReader fileReader = new BufferedReader(new InputStreamReader(new FileInputStream(this.getURI().toFileString()),fileEncodingName));
-		
 		String line = null;
-		int lineCount = 0;
-		boolean betweenDocuments = true; //this is to mark whether the current input line belongs to a document or is just in the space between, before or after a document
+		this.fileLineCount = 0;
 		while((line = fileReader.readLine()) != null) {
-			lineCount++;
-			
-			// opening tag ------------------------------------------------------------------------
-			
+			this.fileLineCount++;
 			if (XMLUtils.isOpeningTag(line)) {
 				String openingTagName = XMLUtils.getName(line);
 				if (openingTagName.equalsIgnoreCase(metaTagName)) {
-					betweenDocuments = false;
-					//create document object
-					document = TreetaggerFactory.eINSTANCE.createDocument();
-					documentCount++;
-					documentBaseName = this.getURI().lastSegment().split("[.]")[0];
-					document.setName(documentBaseName + "_#" + documentCount);
-					addAttributesAsAnnotations(line, document);
+					this.beginDocument(line);
 				}
 				else {
-					Span span = TreetaggerFactory.eINSTANCE.createSpan();
-					openSpans.add(span);
-					span.setName(openingTagName);
-					addAttributesAsAnnotations(line, span);
+					this.beginSpan(openingTagName, line);
 				}
 			} 
-
-			// closing tag  ------------------------------------------------------------------------
-			
 			else if (XMLUtils.isClosingTag(line)) {
 				String closingTagName = XMLUtils.getName(line);
 				if (closingTagName.equalsIgnoreCase(metaTagName)) {
-					//warn if there are missing closing tags
-					if (openSpans.size()>0) {
-						String openSpanNames = "";
-						for (int i=0;i<openSpans.size();i++) {
-							Span span = openSpans.get(i);
-							openSpanNames += ",</" + span.getName() + ">";
-						}
-						logWarning(String.format("input file '%s' (line %d): missing closing tag(s) '%s'. tag(s) will be IGNORED!",this.getURI().lastSegment(),lineCount,openSpanNames.substring(1)));
-					}
-					//add document to contents
-					this.getContents().add(document);
-					betweenDocuments = true;
+					this.xmlDocumentOpen = false;
+					this.endDocument();
 				}
 				else {
-					boolean closingTagFound = (openSpans.size()==0);
-					for (int i=openSpans.size()-1;i>=0||!closingTagFound;i--) {
-
-						//TODO: this is only temporary because i cant concentrate any more - problem is sometimes trying to .get(-1) 
-						if (i<0) {
-							closingTagFound=true;
-							break;
-						}
-						
-						if (openSpans.get(i).getName().equalsIgnoreCase(closingTagName)) {
-							closingTagFound = true;
-							Span openSpan = openSpans.get(i);
-							if (openSpan.getTokens().isEmpty()) {
-								logWarning(String.format("input file '%s' (line %d): no tokens contained in <%s>. tag will be IGNORED!",this.getURI().lastSegment(),lineCount,openSpan.getName()));
-							}
-							openSpans.remove(i);
-						}
-					}
-					if (!closingTagFound) {
-						logWarning(String.format("input file '%s' (line %d): no corresponding opening tag found for closing tag '</%s>'. tag will be IGNORED!",this.getURI().lastSegment(),lineCount,closingTagName));
-					}
+					this.endSpan(closingTagName);
 				}
 			}
-
-			// data line  ------------------------------------------------------------------------
-			
 			else {
-				if (!betweenDocuments) {
-					String[] tuple = line.split(separator);
-					Token token= TreetaggerFactory.eINSTANCE.createToken();
-					document.getTokens().add(token);
-					token.setText(tuple[0]);
-					for (int i=0;i<openSpans.size();i++) {
-						Span span = openSpans.get(i);
-						token.getSpans().add(span);
-						span.getTokens().add(token);
-					}
-					if (tuple.length>1) {
-						POSAnnotation posAnno= TreetaggerFactory.eINSTANCE.createPOSAnnotation();
-						posAnno.setValue(tuple[1]);
-						token.getAnnotations().add(posAnno);
-						if (tuple.length>2) { 
-							LemmaAnnotation lemmaAnno= TreetaggerFactory.eINSTANCE.createLemmaAnnotation();
-							lemmaAnno.setValue(tuple[2]);
-							token.getAnnotations().add(lemmaAnno);
-							if (tuple.length>3) {
-								logWarning(String.format("input file '%s' (line %d): %d data columns found, but only 3 expected. additional columns will be IGNORED! ",this.getURI().lastSegment(),lineCount,tuple.length));
-							}
-						}
-					}
-				}
+				this.addDataRow(line);
 			}
-            //------------------------------------------------------------------------
 		}
-		if (documentCount==1) {
-			document.setName(documentBaseName);
-		}
+		this.endDocument();
 		fileReader.close();
-}
-	
+
+		this.setDocumentNames();
+	}
 }

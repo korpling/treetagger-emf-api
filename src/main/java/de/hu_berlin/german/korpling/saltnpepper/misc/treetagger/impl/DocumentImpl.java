@@ -255,7 +255,7 @@ public class DocumentImpl extends AnnotatableElementImpl implements Document {
 		if (!(obj instanceof Document)) {
 			return false;
 		}
-
+		
 		Document doc = (Document)obj;
 
 		//##### compare names #####
