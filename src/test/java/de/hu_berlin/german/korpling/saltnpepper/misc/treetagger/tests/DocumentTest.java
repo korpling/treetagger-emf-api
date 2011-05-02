@@ -73,14 +73,14 @@ public class DocumentTest extends AnnotatableElementTest {
 	}
 
 	/**
-	 * TODO: describe
+	 * Tests equals method for Documents. The name field is not subject to equality.
 	 */
 	public void testEquals() {
-		Document document = TreetaggerFactory.eINSTANCE.createDocument();
+		Document document1 = TreetaggerFactory.eINSTANCE.createDocument();
 		Document document2 = TreetaggerFactory.eINSTANCE.createDocument();
-		assertEquals(document,document2);		
+		assertEquals(document1,document2);		
 		
-		Document[] docArray = {document,document2};
+		Document[] docArray = {document1,document2};
 		
 		for (int docIndex=0;docIndex<2;docIndex++) {
 			//add some tokens to document and some annotations to tokens
@@ -96,35 +96,7 @@ public class DocumentTest extends AnnotatableElementTest {
 			}
 		}
 		
-		assertEquals(document,document2);
-		
-		
-//		//prepare resourceSet
-//		ResourceSet resourceSet = new ResourceSetImpl();
-//		resourceSet.getPackageRegistry().put(TreetaggerPackage.eINSTANCE.getNsURI(), TreetaggerPackage.eINSTANCE);
-//		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("tab", new TabResourceFactory());
-//		
-//		URI documentURI = URI.createFileURI("./src/test/resources/testTabResource.tab");
-//		TabResource documentResource = (TabResource)resourceSet.createResource(documentURI);
-//		documentResource.getContents().add(document);
-//		
-//		try {
-//			documentResource.save(null);
-//		} catch (IOException e) {
-//			fail();
-//		}
-//
-//		TabResource loadedDocumentResource = (TabResource)resourceSet.createResource(documentURI);
-//		try {
-//			loadedDocumentResource.load(null);
-//		} catch (IOException e) {
-//			fail();
-//		}
-//		
-//		Document loadedDocument = (Document)loadedDocumentResource.getContents().get(0);
-//		
-//		assertEquals(document, loadedDocument);
-
+		assertEquals(document1,document2);
 	}
 	
 } //DocumentTest

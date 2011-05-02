@@ -245,7 +245,9 @@ public class DocumentImpl extends AnnotatableElementImpl implements Document {
 	}
 
 	/**
-	 * TODO: describe
+	 * Checks this and given object for equality. Conditions for equality: Object must be instance of Document, getTokens().size() must be equal, all Tokens must be equal and all annotations must correspond. 
+	 * @param obj An object
+	 * @return true or false
 	 */
 	public boolean equals(Object obj) {
 		if (this==obj) {
@@ -258,11 +260,12 @@ public class DocumentImpl extends AnnotatableElementImpl implements Document {
 		
 		Document doc = (Document)obj;
 
-		//##### compare names #####
-		if (((this.getName()!=null)&&(!(this.getName().equals(doc.getName())))) 
-			||((doc.getName()!=null)&&(!(doc.getName().equals(this.getName()))))) {
-			return false;
-		}
+//		this can only be used if documents are really identical (including names), but this method only has to check for equality of contents 
+//		//##### compare names #####
+//		if (((this.getName()!=null)&&(!(this.getName().equals(doc.getName())))) 
+//			||((doc.getName()!=null)&&(!(doc.getName().equals(this.getName()))))) {
+//			return false;
+//		}
 
 		//##### compare tokens (mind order) #####
 		if (this.getTokens().size()!=doc.getTokens().size()) {

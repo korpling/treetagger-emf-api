@@ -234,7 +234,9 @@ public class SpanImpl extends AnnotatableElementImpl implements Span {
 	}
 
 	/**
-	 * TODO: describe
+	 * Checks this and given object for equality. Conditions for equality: Object must be instance of Span, have the same name as this, getTokens().size() must be equal and annotations must be equal. 
+	 * @param obj An object
+	 * @return true or false
 	 */
 	public boolean equals(Object obj) {
 		if (this==obj) {
@@ -258,12 +260,13 @@ public class SpanImpl extends AnnotatableElementImpl implements Span {
 			return false;
 		}
 
+		//this would cause stack overflow, because spans test tokens and tokens test spans
 		//iteration via counter (not iterator) -> threadsave!
-		for (int i=0;i<this.getTokens().size();i++) {
-			if (!this.getTokens().get(i).equals(span.getTokens().get(i))) {
-				return false;
-			}
-		}
+//		for (int i=0;i<this.getTokens().size();i++) {
+//			if (!this.getTokens().get(i).equals(span.getTokens().get(i))) {
+//				return false;
+//			}
+//		}
 
 		//okay fine, check super to compare Annotations
 		return super.equals(obj);

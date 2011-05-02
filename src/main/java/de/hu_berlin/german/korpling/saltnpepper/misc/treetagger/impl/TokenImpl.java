@@ -414,7 +414,9 @@ public class TokenImpl extends AnnotatableElementImpl implements Token {
 	}
 
 	/**
-	 * TODO: describe
+	 * Checks this and given object for equality. Conditions for equality: Object must be instance of Span, have the same name as this, getSpans().size() must be equal, all Spans must correspond and annotations must be equal. 
+	 * @param obj An object
+	 * @return true or false
 	 */
 	public boolean equals(Object obj) {
 		if (this==obj) {
@@ -431,6 +433,18 @@ public class TokenImpl extends AnnotatableElementImpl implements Token {
 			return false;
 		}
 
+      	//##### compare span count #####
+		if (this.getSpans().size()!=tok.getSpans().size()) {
+			return false;
+		}
+		
+		//##### compare spans #####
+		for (int i=0;i<this.getSpans().size();i++) {
+			if (!(this.getSpans().get(i).equals(tok.getSpans().get(i)))) {
+				return false; 
+			}
+		}
+			
 		//okay fine, check super to compare Annotations
 		return super.equals(obj);
 	}

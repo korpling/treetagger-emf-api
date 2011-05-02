@@ -132,7 +132,7 @@ public class TokenTest extends AnnotatableElementTest {
 	}
 
 	/**
-	 * TODO: describe
+	 * Tests equals method for Tokens.
 	 */
 	public void testEquals() {
 		Token token1 = null;

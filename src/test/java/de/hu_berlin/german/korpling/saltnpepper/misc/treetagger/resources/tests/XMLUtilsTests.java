@@ -15,23 +15,9 @@ public class XMLUtilsTests extends TestCase {
 		super(name);
 	}
 
-//	public final void testIsOpeningTag() {
-//		//assertTrue(XMLUtils.isOpeningTag("<TAG peter='gf'>"));
-//	}
-//
-//	public final void testGetName() {
-//		//assertEquals("TAG",XMLUtils.getName("<TAG peter=''>"));
-//	}
-//
-//	public final void testGetAttributeValueTable() {
-//		
-//		//XMLUtils.getAttributeValueTable("<TAG sophia='(holy)' marc=\"(cool)\" florian='(devil)'>").toString();
-//		//System.out.println(XMLUtils.getAttributeValueList("<TAG sophia='(holy)' marc=\"(cool)\" florian='(devil)'>").toString());
-//
-//		
-//	}
-//	
-	
+	public final void testIsOpeningTag() {
+		assertTrue(XMLUtils.isOpeningTag("<TAG test='testVal'>"));
+	}
 
 	public final void testIsS() {
 		Character x09 = new Character((char)0x09);
@@ -119,16 +105,16 @@ public class XMLUtilsTests extends TestCase {
 	
 	public final void testIsSTag() {
 		String[] valids = {
-				"<Hallo>",
-				"<TAG peter=''>",
-				"<TAG peter='Super:peter'>",
-				"<TAG peterle=\"hallo\">",
+				"<Test>",
+				"<TAG test=''>",
+				"<TAG test='test:test'>",
+				"<TAG test=\"test\">",
 		};
 		
 		String[] invalids = {
 				"<>",
-				"<TAG peterle='hallo\">",
-				"<TAG peterle=\"hallo'>"
+				"<TAG test='test\">",
+				"<TAG test=\"test'>"
 		};
 		
 		for (String valid:valids) {
@@ -149,15 +135,14 @@ public class XMLUtilsTests extends TestCase {
 	public final void testGetName() {
 		assertEquals("TAG", XMLUtils.getName("<TAG>"));
 		assertEquals("TAG", XMLUtils.getName("<TAG >"));
-		assertEquals("TAG", XMLUtils.getName("<TAG att='Peter'>"));
-
+		assertEquals("TAG", XMLUtils.getName("<TAG att='test'>"));
 	
-		assertNotSame("TAG", XMLUtils.getName("TAG att='Peter'>"));
+		assertNotSame("TAG", XMLUtils.getName("TAG att='test'>"));
 	}
 
 	
 	public final void testGetAttributeValueList() {
-		ArrayList<SimpleEntry<String, String>> list = XMLUtils.getAttributeValueList("<TAG peter='Meter' elli='schnelli' max=\"bax\"    heinz='keinz'");
+		ArrayList<SimpleEntry<String, String>> list = XMLUtils.getAttributeValueList("<TAG test='testVal' test2='test2Val' test3=\"test3Val\"    test4='test4Val'");
 		for (int i=0;i<list.size();i++) {
 			SimpleEntry<String,String> entry = list.get(i);
 			System.out.println(entry.getKey() + "\t" + entry.getValue());
@@ -165,7 +150,7 @@ public class XMLUtilsTests extends TestCase {
 	}
 	
 	public final void testGetAttributeValueTable() {
-		Hashtable<String, String> table = XMLUtils.getAttributeValueTable("<TAG peter='Meter' elli='schnelli' max=\"bax\"    heinz='keinz'");
+		Hashtable<String, String> table = XMLUtils.getAttributeValueTable("<TAG test='testVal' test2='test2Val' test3=\"test3Val\"    test4='test4Val'");
 		for (Entry<String, String> entry : table.entrySet()) {
   		  System.out.println(entry.getKey() + "\t" + entry.getValue());
 		}

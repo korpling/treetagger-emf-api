@@ -48,12 +48,17 @@ public class TabResource extends ResourceImpl
 	 */
 	private String separator= "\t";
 	
-	/**
-	 * default values
-	 */
-	private String defaultOutputFileEncodingName = "UTF-8";
-	private String defaultInputFileEncodingName  = "UTF-8";
-	private String defaultMetaTagName = "meta";
+	public static final String logServiceKey = "LOGSERVICE";
+	public static final String propertiesKey = "PROPERTIES"; 
+	
+	public static final String propertyInputMetaTag       = "treetagger.input.metaTag";
+	public static final String propertyInputFileEncoding  = "treetagger.input.fileEncoding";
+	public static final String propertyOutputMetaTag      = "treetagger.output.metaTag";	
+	public static final String propertyOutputFileEncoding = "treetagger.output.fileEncoding";	
+
+	private static final String defaultOutputFileEncoding = "UTF-8";
+	private static final String defaultInputFileEncoding  = "UTF-8";
+	private static final String defaultMetaTag = "meta";
 	
 	//----------------------------------------------------------
 	private LogService logService = null;
@@ -75,8 +80,8 @@ public class TabResource extends ResourceImpl
 	private void logError  (String logText) { this.log(LogService.LOG_ERROR,   logText); }
 	private void logWarning(String logText) { this.log(LogService.LOG_WARNING, logText); }
 	private void logInfo   (String logText) { this.log(LogService.LOG_INFO,    logText); }
-	@SuppressWarnings("unused")
-	private void logDebug  (String logText) { this.log(LogService.LOG_DEBUG,   logText); }
+//	private void logDebug  (String logText) { this.log(LogService.LOG_DEBUG,   logText); }
+	
 	//----------------------------------------------------------
 	
 	private Properties properties = null;
@@ -89,17 +94,41 @@ public class TabResource extends ResourceImpl
 		this.properties = properties;
 	}
 	//----------------------------------------------------------
+
+	
+	
+/*==============================================================================================================
+/* S A V I N G . . . 
+/*==============================================================================================================
+	
+	
 	
 	/**
 	 * Stores a a treetagger-model into tab-separated file.
 	 */
 	public void save(java.util.Map<?,?> options) throws java.io.IOException
 	{
-		String metaTagName = properties.getProperty("treetaggerModule.metaTagName".trim(), "meta");
-		String fileEncodingName = properties.getProperty("treetaggerModule.outputFileEncodingName".trim(),defaultOutputFileEncodingName);
+		if (options!=null) {
+			if (options.containsKey(logServiceKey)) {
+				this.setLogService((LogService)options.get(logServiceKey));		
+			}
+			if (options.containsKey(propertiesKey)) {
+				this.setProperties((Properties)options.get(propertiesKey));		
+			}
+		}
 		
-		BufferedWriter fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.getURI().toFileString()), fileEncodingName));
+		if (this.getProperties()==null) {
+			logWarning("no properties given for loading of resource. using defaults.");
+			this.setProperties(new Properties());
+		}
 		
+		String metaTag = properties.getProperty(propertyOutputMetaTag, defaultMetaTag);
+		logInfo(String.format("using meta tag '%s'",metaTag));
+		
+		String fileEncoding = properties.getProperty(propertyOutputFileEncoding, defaultOutputFileEncoding);
+		logInfo(String.format("using output file encoding '%s'",fileEncoding));
+		
+		BufferedWriter fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.getURI().toFileString()), fileEncoding));
 		try 
 		{
 			//write contents if some exists
@@ -117,7 +146,7 @@ public class TabResource extends ResourceImpl
 
 					Document document = (Document)content;
 					
-					fileWriter.write(String.format("<%s",metaTagName));
+					fileWriter.write(String.format("<%s",metaTag));
 					for (int i=0;i<document.getAnnotations().size();i++) {
 						Annotation annotation = document.getAnnotations().get(i);
 						fileWriter.write(String.format(" %s=\"%s\"",annotation.getName(),annotation.getValue()));
@@ -140,13 +169,13 @@ public class TabResource extends ResourceImpl
 						}
 						
 						//write opening tags
-						for (int spanIndex=0;spanIndex<token.getSpans().size();spanIndex++) {
+						for (int spanIndex=token.getSpans().size()-1;spanIndex>=0;spanIndex--) {
 							Span span = token.getSpans().get(spanIndex);
 							if (!spanList.contains(span)) {
 								spanList.add(span);
 								fileWriter.write("<"+span.getName());
 								for (Annotation anno: span.getAnnotations()) {
-									fileWriter.write(" " + anno.getName() + "\"=\"" + anno.getValue());
+									fileWriter.write(" " + anno.getName() + "=\"" + anno.getValue() + "\"");
 								}
 								fileWriter.write(">\n");
 							}
@@ -174,7 +203,7 @@ public class TabResource extends ResourceImpl
 					}
 					
 					//write end of document
-					fileWriter.write(String.format("</%s>\n", metaTagName));
+					fileWriter.write(String.format("</%s>\n", metaTag));
 					
 				}
 			}
@@ -188,21 +217,12 @@ public class TabResource extends ResourceImpl
 			fileWriter= null;
 		}
 	}
+
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+		
+/*==============================================================================================================
+/* L O A D I N G . . .
+/*==============================================================================================================
 	
 	
 	
@@ -370,11 +390,9 @@ public class TabResource extends ResourceImpl
 		this.xmlDocumentOpen = false;
 		
 		if (options!=null) {
-			String logServiceKey = "LOGSERVICE";
 			if (options.containsKey(logServiceKey)) {
 				this.setLogService((LogService)options.get(logServiceKey));		
 			}
-			String propertiesKey = "PROPERTIES";
 			if (options.containsKey(propertiesKey)) {
 				this.setProperties((Properties)options.get(propertiesKey));		
 			}
@@ -385,11 +403,11 @@ public class TabResource extends ResourceImpl
 			this.setProperties(new Properties());
 		}
 		
-		String metaTagName = properties.getProperty("treetagger.metaTagName", defaultMetaTagName);
-		logInfo(String.format("using meta tag '%s'",metaTagName));
+		String metaTag = properties.getProperty(propertyInputMetaTag, defaultMetaTag);
+		logInfo(String.format("using meta tag '%s'",metaTag));
 		
-		String fileEncodingName = properties.getProperty("treetagger.inputFileEncodingName",defaultInputFileEncodingName);
-		logInfo(String.format("using input file encoding '%s'",fileEncodingName));
+		String fileEncoding = properties.getProperty(propertyInputFileEncoding, defaultInputFileEncoding);
+		logInfo(String.format("using input file encoding '%s'",fileEncoding));
 		
 		if (this.getURI()== null) {
 			String errorMessage = "Cannot load any resource, because no uri is given.";
@@ -397,14 +415,14 @@ public class TabResource extends ResourceImpl
 			throw new NullPointerException(errorMessage);
 		}
 
-		BufferedReader fileReader = new BufferedReader(new InputStreamReader(new FileInputStream(this.getURI().toFileString()),fileEncodingName));
+		BufferedReader fileReader = new BufferedReader(new InputStreamReader(new FileInputStream(this.getURI().toFileString()),fileEncoding));
 		String line = null;
 		this.fileLineCount = 0;
 		while((line = fileReader.readLine()) != null) {
 			this.fileLineCount++;
 			if (XMLUtils.isOpeningTag(line)) {
 				String openingTagName = XMLUtils.getName(line);
-				if (openingTagName.equalsIgnoreCase(metaTagName)) {
+				if (openingTagName.equalsIgnoreCase(metaTag)) {
 					this.beginDocument(line);
 				}
 				else {
@@ -413,7 +431,7 @@ public class TabResource extends ResourceImpl
 			} 
 			else if (XMLUtils.isClosingTag(line)) {
 				String closingTagName = XMLUtils.getName(line);
-				if (closingTagName.equalsIgnoreCase(metaTagName)) {
+				if (closingTagName.equalsIgnoreCase(metaTag)) {
 					this.xmlDocumentOpen = false;
 					this.endDocument();
 				}

@@ -165,7 +165,9 @@ public abstract class AnnotatableElementImpl extends EObjectImpl implements Anno
 	}
 
 	/**
-	 * TODO: describe
+	 * Checks this and given object for equality. Conditions for equality: Object must be instance of AnnotatableElement, getAnnotations().size() must be equal and all Annotations must correspond. 
+	 * @param obj An object
+	 * @return true or false
 	 */
 	public boolean equals(Object obj) {
 		if (this==obj) {
@@ -184,18 +186,9 @@ public abstract class AnnotatableElementImpl extends EObjectImpl implements Anno
 		//iteration via counter (not iterator) -> threadsave!
 		for (int i=0;i<this.getAnnotations().size();i++) {
 
-			//this just does´t work... using another for-loop instead
-			//TODO: make it work
-			//if (!(tok.getAnnotations().contains(this.getAnnotations().get(i)))) {
-			//	return false;
-			//}
-
 			boolean equalExists = false;
-			for (int j=0;j<annotatableElement.getAnnotations().size();j++) {
-				if (annotatableElement.getAnnotations().get(j).equals(this.getAnnotations().get(i))) {
-					equalExists = true;
-					break;
-				}
+			for (int j=0;(j<annotatableElement.getAnnotations().size()) && !equalExists;j++) {
+				equalExists = (annotatableElement.getAnnotations().get(j).equals(this.getAnnotations().get(i)));
 			}
 			if (!equalExists) {
 				return false;

@@ -7,6 +7,8 @@
 package de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.tests;
 
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.AnnotatableElement;
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Annotation;
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.TreetaggerFactory;
 
 import junit.framework.TestCase;
 
@@ -55,5 +57,5 @@ public abstract class AnnotatableElementTest extends TestCase {
 	protected AnnotatableElement getFixture() {
 		return fixture;
 	}
-
+	
 } //AnnotatableElementTest

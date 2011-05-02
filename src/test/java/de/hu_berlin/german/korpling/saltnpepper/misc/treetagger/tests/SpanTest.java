@@ -71,7 +71,7 @@ public class SpanTest extends AnnotatableElementTest {
 	}
 
 	/**
-	 * TODO: describe
+	 * Tests equals method for Span.
 	 */
 	public void testEquals() {
 		Span span1 = null;

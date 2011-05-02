@@ -89,7 +89,7 @@ public class AnnotationTest extends TestCase {
 	}
 
 	/**
-	 * TODO: describe
+	 * Tests equals method for annotations.
 	 */
 	public void testEquals() {
 		Annotation anno1 = null;
