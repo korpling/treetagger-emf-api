@@ -42,6 +42,7 @@ public class XMLUtils {
 	private static final Character x2FEF  = new Character((char)0x2FEF);
 	private static final Character x3001  = new Character((char)0x3001);
 	private static final Character xD7FF  = new Character((char)0xD7FF);
+	private static final Character xE000  = new Character((char)0xE000);
 	private static final Character xF900  = new Character((char)0xF900);
 	private static final Character xFDCF  = new Character((char)0xFDCF);
 	private static final Character xFDF0  = new Character((char)0xFDF0);
@@ -57,6 +58,7 @@ public class XMLUtils {
 	private static final String namestartchar = "([" + namestartchars + "])";
 	private static final String namechar = "([" + namechars + "])";
 	private static final String name = "(" + namestartchar + namechar + "*)";
+	private static final String normalChar = String.format("[%c%c%c%c-%c%c-%c]", x09,x0A,x0D,x20,xD7FF,xE000,xFFFD);
 	private static final String entityref = "(&"+name+";)";
 	private static final String charref = "((&#[0-9]+;)|(&#x[0-9a-fA-F]+;))";
 	private static final String reference = "(" + entityref + "|" + charref + ")";
@@ -67,8 +69,10 @@ public class XMLUtils {
 
 	private static final String openingTag = "<" + name + "("+s+attribute+")*"+ s +"?>";
 	private static final String closingTag = "</" + name + s + "?>";
-	
-	
+
+	//TODO: this is just an approximation to the processing instruction syntax, could be made more precise	
+	private static final String piTarget = name;
+	private static final String processingInstructionTag = "<\\?" + piTarget + "(" + s + normalChar + "*" + ")?" + "\\?>"; 
 	
 	private static final Pattern sPattern = Pattern.compile(s);
 	private static final Pattern eqPattern = Pattern.compile(eq); 
@@ -77,9 +81,10 @@ public class XMLUtils {
 	private static final Pattern attvaluePattern = Pattern.compile(attvalue);	
 	private static final Pattern openingTagPattern = Pattern.compile(openingTag);
 	private static final Pattern closingTagPattern = Pattern.compile(closingTag);
+	private static final Pattern processingInstructionTagPattern = Pattern.compile(processingInstructionTag);
 	
 	public static final boolean isS(String input) {
-		return sPattern.matcher(input).matches();
+		return sPattern.matcher(input).matches(); 
 	}
 	
 	public static final boolean isEq(String input) {
@@ -92,6 +97,10 @@ public class XMLUtils {
 
 	public static final boolean isClosingTag(String input) {
 		return closingTagPattern.matcher(input).matches();		
+	}
+	
+	public static final boolean isProcessingInstructionTag(String input) {
+		return processingInstructionTagPattern.matcher(input).matches();
 	}
 	
 	public static final String getName(String input) {

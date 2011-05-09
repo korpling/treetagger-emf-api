@@ -420,7 +420,10 @@ public class TabResource extends ResourceImpl
 		this.fileLineCount = 0;
 		while((line = fileReader.readLine()) != null) {
 			this.fileLineCount++;
-			if (XMLUtils.isOpeningTag(line)) {
+			if (XMLUtils.isProcessingInstructionTag(line)) {
+				//do nothing; ignore processing instructions
+			}
+			else if (XMLUtils.isOpeningTag(line)) {
 				String openingTagName = XMLUtils.getName(line);
 				if (openingTagName.equalsIgnoreCase(metaTag)) {
 					this.beginDocument(line);
