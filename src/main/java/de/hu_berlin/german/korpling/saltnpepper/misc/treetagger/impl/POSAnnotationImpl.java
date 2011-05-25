@@ -48,6 +48,7 @@ public class POSAnnotationImpl extends AnnotationImpl implements POSAnnotation {
 	
 	/**
 	 * <!-- begin-user-doc -->
+	 * Does not set the name - name will always be set to "pos" 	 
 	 * <!-- end-user-doc -->
 	 */
 	public void setName(String newValue) 

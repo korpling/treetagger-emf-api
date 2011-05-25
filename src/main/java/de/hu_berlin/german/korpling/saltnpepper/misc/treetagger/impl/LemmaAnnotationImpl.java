@@ -48,6 +48,7 @@ public class LemmaAnnotationImpl extends AnnotationImpl implements LemmaAnnotati
 	
 	/**
 	 * <!-- begin-user-doc -->
+	 * Does not set the name - name will always be set to "lemma"
 	 * <!-- end-user-doc -->
 	 */
 	public void setName(String newValue) 
