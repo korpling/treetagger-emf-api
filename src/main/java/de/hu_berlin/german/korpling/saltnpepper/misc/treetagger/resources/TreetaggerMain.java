@@ -64,8 +64,10 @@ public class TreetaggerMain
 
 		// Register XML resource factory
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("treetagger",new XMIResourceFactoryImpl());
-		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("tab",new TabResourceFactory());
-
+		TabResourceFactory tabResourceFactory = new TabResourceFactory();
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("tab",tabResourceFactory);
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("tt",tabResourceFactory);
+		
 		//load resource 
 		Resource resource = resourceSet.createResource(URI.createFileURI(inputFile));
 		

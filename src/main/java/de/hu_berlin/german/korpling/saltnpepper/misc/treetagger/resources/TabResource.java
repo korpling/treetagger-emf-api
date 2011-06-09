@@ -60,6 +60,8 @@ public class TabResource extends ResourceImpl
 	private static final String defaultInputFileEncoding  = "UTF-8";
 	private static final String defaultMetaTag = "meta";
 	
+	private static final Character utf8BOM = new Character((char)0xFEFF);
+
 	//----------------------------------------------------------
 	private LogService logService = null;
 	
@@ -419,6 +421,13 @@ public class TabResource extends ResourceImpl
 		String line = null;
 		this.fileLineCount = 0;
 		while((line = fileReader.readLine()) != null) {
+
+			//delete BOM if exists
+			if ((this.fileLineCount==0)&&(line.startsWith(utf8BOM.toString()))) {
+				line = line.substring(utf8BOM.toString().length());
+				logInfo("BOM recognised and ignored");
+			}
+
 			this.fileLineCount++;
 			if (XMLUtils.isProcessingInstructionTag(line)) {
 				//do nothing; ignore processing instructions
