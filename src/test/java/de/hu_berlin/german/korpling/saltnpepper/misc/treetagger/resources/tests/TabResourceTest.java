@@ -10,6 +10,11 @@ import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Document;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.resources.TabResource;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.resources.TabResourceFactory;
 
+/**
+ * Testcase for TabResource
+ * @author hildebax
+ *
+ */
 public class TabResourceTest extends TestCase {
 
 	public TabResourceTest(String name) {
@@ -24,6 +29,9 @@ public class TabResourceTest extends TestCase {
 		super.tearDown();
 	}
 
+	/**
+	 * calls {@link #testLoadMapOfQQ}
+	 */
 	public final void testSaveMapOfQQ() {
 		this.testLoadMapOfQQ();
 	}

@@ -67,8 +67,8 @@ public class XMLUtils {
 	private static final String attvalue = String.format("(%s|%s)", attvalueSingleQuote, attvalueDoubleQuote);
 	private static final String attribute = "(" + name + eq + attvalue + ")"; 
 
-	private static final String openingTag = "<" + name + "("+s+attribute+")*"+ s +"?>";
-	private static final String closingTag = "</" + name + s + "?>";
+	private static final String startTag = "<" + name + "("+s+attribute+")*"+ s +"?>";
+	private static final String endTag = "</" + name + s + "?>";
 
 	//TODO: this is just an approximation to the processing instruction syntax, could be made more precise	
 	private static final String piTarget = name;
@@ -79,30 +79,60 @@ public class XMLUtils {
 	private static final Pattern namePattern = Pattern.compile(name);
 	private static final Pattern attributePattern = Pattern.compile(attribute);
 	private static final Pattern attvaluePattern = Pattern.compile(attvalue);	
-	private static final Pattern openingTagPattern = Pattern.compile(openingTag);
-	private static final Pattern closingTagPattern = Pattern.compile(closingTag);
+	private static final Pattern startTagPattern = Pattern.compile(startTag);
+	private static final Pattern endTagPattern = Pattern.compile(endTag);
 	private static final Pattern processingInstructionTagPattern = Pattern.compile(processingInstructionTag);
 	
-	public static final boolean isS(String input) {
+	/**
+	 * Returns true if input is a <a href="http://www.w3.org/TR/2008/REC-xml-20081126/#NT-S">white space expression</a> according to XML specification.
+	 * @param input the expression
+	 * @return true or false
+	 */
+	public static final boolean isWhiteSpace(String input) {
 		return sPattern.matcher(input).matches(); 
 	}
 	
+	/**
+	 * Returns true if input is an <a href="http://www.w3.org/TR/2008/REC-xml-20081126/#NT-Eq">eq expression</a> according to XML specification.
+	 * @param input the expression
+	 * @return true or false
+	 */
 	public static final boolean isEq(String input) {
 		return eqPattern.matcher(input).matches();
 	}
 	
-	public static final boolean isOpeningTag(String input) {
-		return openingTagPattern.matcher(input).matches();
+	/**
+	 * Returns true if input is a <a href="http://www.w3.org/TR/2008/REC-xml-20081126/#sec-starttags">start tag expression</a> according to XML specification.
+	 * @param input the expression
+	 * @return true or false
+	 */
+	public static final boolean isStartTag(String input) {
+		return startTagPattern.matcher(input).matches();
 	}
 
-	public static final boolean isClosingTag(String input) {
-		return closingTagPattern.matcher(input).matches();		
+	/**
+	 * Returns true if input is an <a href="http://www.w3.org/TR/2008/REC-xml-20081126/#sec-starttags">end tag expression</a> according to XML specification.
+	 * @param input the expression
+	 * @return true or false
+	 */
+	public static final boolean isEndTag(String input) {
+		return endTagPattern.matcher(input).matches();		
 	}
 	
+	/**
+	 * Returns true if input is a processing instruction expression.
+	 * @param input the expression
+	 * @return true or false
+	 */
 	public static final boolean isProcessingInstructionTag(String input) {
 		return processingInstructionTagPattern.matcher(input).matches();
 	}
 	
+	/**
+	 * Returns the first match of a <a href="http://www.w3.org/TR/2008/REC-xml-20081126/#NT-Name">name</a> in the input according to the XML specifications. If there is no match, <code>null</code> is returned. 
+	 * @param input the expression containing the name
+	 * @return the name or <code>null</code>
+	 */
 	public static final String getName(String input) {
 		Matcher matcher = namePattern.matcher(input);
 		if (matcher.find()) {
@@ -111,6 +141,11 @@ public class XMLUtils {
 		return null;
 	}
 	
+	/**
+	 * Returns a list of attribute-value-pairs from the input string
+	 * @param input the expression
+	 * @return the list
+	 */
 	public static final ArrayList<SimpleEntry<String,String>> getAttributeValueList(String input) {
 		ArrayList<SimpleEntry<String,String>> list = new ArrayList<SimpleEntry<String,String>>();
 		Matcher attrMatcher = attributePattern.matcher(input);
@@ -127,6 +162,11 @@ public class XMLUtils {
 		return list;
 	}
 
+	/**
+	 * Returns a Hashtable of attribute-value-pairs from the input string
+	 * @param input the expression
+	 * @return the Hashtable
+	 */
 	public static final Hashtable<String,String> getAttributeValueTable(String input) {
 		Hashtable<String,String> table = new Hashtable<String,String>();
 		ArrayList<SimpleEntry<String,String>> list = XMLUtils.getAttributeValueList(input);

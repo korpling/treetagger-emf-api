@@ -9,17 +9,56 @@ import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.resources.XMLUti
 
 import junit.framework.TestCase;
 
+/**
+ * Test case for the XMLUtils
+ * @author hildebax
+ *
+ */
 public class XMLUtilsTests extends TestCase {
 
 	public XMLUtilsTests(String name) {
 		super(name);
 	}
 
-	public final void testIsOpeningTag() {
-		assertTrue(XMLUtils.isOpeningTag("<TAG test='testVal'>"));
+	/**
+	 * tests whether expressions are correctly recognised as <a href="http://www.w3.org/TR/2008/REC-xml-20081126/#sec-starttags">start tag expressions</a>
+	 */
+	public final void testIsStartTag() {
+		String[] valids = {
+				"<Test>",
+				"<TAG test=''>",
+				"<TAG test='testVal'>",
+				"<TAG test='test:test'>",
+				"<TAG test=\"test\">",
+		};
+		
+		String[] invalids = {
+				"<>",
+				"<TAG test='test\">",
+				"<TAG test=\"test'>",
+				"</TAG test='testVal'>",
+				"TAG test='testVal'"
+				
+		};
+		
+		for (String valid:valids) {
+			if (!XMLUtils.isStartTag(valid)) {
+				fail();
+			}
+		};
+		
+		for (String invalid:invalids) {
+			if(XMLUtils.isStartTag(invalid)) {
+				fail();
+			}
+		};
+
 	}
 
-	public final void testIsS() {
+	/**
+	 * tests whether expressions are correctly recognised as <a href="http://www.w3.org/TR/2008/REC-xml-20081126/#NT-S">white space expression</a>
+	 */
+	public final void testIsWhiteSpace() {
 		Character x09 = new Character((char)0x09);
 		Character x0A = new Character((char)0x0A);
 		Character x0D = new Character((char)0x0D);
@@ -48,13 +87,13 @@ public class XMLUtilsTests extends TestCase {
 		};
 		
 		for (String valid:valids) {
-			if (!XMLUtils.isS(valid)) {
+			if (!XMLUtils.isWhiteSpace(valid)) {
 				fail();
 			}
 		};
 		
 		for (String invalid:invalids) {
-			if(XMLUtils.isS(invalid)) {
+			if(XMLUtils.isWhiteSpace(invalid)) {
 				fail();
 			}
 		};
@@ -62,6 +101,9 @@ public class XMLUtilsTests extends TestCase {
 
 	
 	
+	/**
+	 * tests whether expressions are correctly recognised as <a href="http://www.w3.org/TR/2008/REC-xml-20081126/#NT-Eq">eq expressions</a> 
+	 */
 	public final void testIsEq() {
 		Character x09 = new Character((char)0x09);
 		Character x0A = new Character((char)0x0A);
@@ -101,37 +143,9 @@ public class XMLUtilsTests extends TestCase {
 	}
 	
 	
-	
-	
-	public final void testIsSTag() {
-		String[] valids = {
-				"<Test>",
-				"<TAG test=''>",
-				"<TAG test='test:test'>",
-				"<TAG test=\"test\">",
-		};
-		
-		String[] invalids = {
-				"<>",
-				"<TAG test='test\">",
-				"<TAG test=\"test'>"
-		};
-		
-		for (String valid:valids) {
-			if (!XMLUtils.isOpeningTag(valid)) {
-				fail();
-			}
-		};
-		
-		for (String invalid:invalids) {
-			if(XMLUtils.isOpeningTag(invalid)) {
-				fail();
-			}
-		};
-	}
-	
-	
-	
+	/**
+	 * tests whether names are correctly extracted and returned from start tags 
+	 */
 	public final void testGetName() {
 		assertEquals("TAG", XMLUtils.getName("<TAG>"));
 		assertEquals("TAG", XMLUtils.getName("<TAG >"));
@@ -140,7 +154,9 @@ public class XMLUtilsTests extends TestCase {
 		assertNotSame("TAG", XMLUtils.getName("TAG att='test'>"));
 	}
 
-	
+	/**
+	 * tests whether lists of attribute-value-pairs (implemented as <a href="http://download.oracle.com/javase/6/docs/api/java/util/1AbstractMap.SimpleEntry.html">SimpleEntry</a> (String,String) of start tags are returned correctly.
+	 */
 	public final void testGetAttributeValueList() {
 		ArrayList<SimpleEntry<String, String>> list = XMLUtils.getAttributeValueList("<TAG test='testVal' test2='test2Val' test3=\"test3Val\"    test4='test4Val'");
 		for (int i=0;i<list.size();i++) {
@@ -148,7 +164,10 @@ public class XMLUtilsTests extends TestCase {
 			System.out.println(entry.getKey() + "\t" + entry.getValue());
 		}
 	}
-	
+
+	/**
+	 * tests whether hashtables (String,String) of attribute-value-pairs of start tags are returned correctly.
+	 */
 	public final void testGetAttributeValueTable() {
 		Hashtable<String, String> table = XMLUtils.getAttributeValueTable("<TAG test='testVal' test2='test2Val' test3=\"test3Val\"    test4='test4Val'");
 		for (Entry<String, String> entry : table.entrySet()) {

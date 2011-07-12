@@ -41,34 +41,68 @@ import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Span;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Token;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.TreetaggerFactory;
 
+/**
+ * Resource for loading and saving of treetagger data
+ * @author hildebax
+ *
+ */
 public class TabResource extends ResourceImpl
 {
-	/**
-	 * Seperator which seperates columns
-	 */
+	//column seperator
 	private String separator= "\t";
 	
+	/**
+	 * Key for the LogService in the options map of load and save methods
+	 */
 	public static final String logServiceKey = "LOGSERVICE";
+	/**
+	 * Key for the Properties in the options map of load and save method
+	 */
 	public static final String propertiesKey = "PROPERTIES"; 
 	
+	/**
+	 * property key for the meta tag of input
+	 */
 	public static final String propertyInputMetaTag       = "treetagger.input.metaTag";
+
+	/**
+	 * property key for the encoding of input file
+	 */
 	public static final String propertyInputFileEncoding  = "treetagger.input.fileEncoding";
+
+	/**
+	 * property key for the meta tag of output
+	 */
 	public static final String propertyOutputMetaTag      = "treetagger.output.metaTag";	
+	
+	/**
+	 * property key for the encoding of output file
+	 */
 	public static final String propertyOutputFileEncoding = "treetagger.output.fileEncoding";	
 
+	//property default values
 	private static final String defaultOutputFileEncoding = "UTF-8";
 	private static final String defaultInputFileEncoding  = "UTF-8";
 	private static final String defaultMetaTag = "meta";
 	
+	//BOM character
 	private static final Character utf8BOM = new Character((char)0xFEFF);
 
 	//----------------------------------------------------------
 	private LogService logService = null;
 	
+	/**
+	 * Getter for the LogService
+	 * @return the LogService
+	 */
 	public LogService getLogService() {
 		return logService;
 	}
 
+	/**
+	 * Setter for the LogService
+	 * @param logService the LogService
+	 */
 	public void setLogService(LogService logService) {
 		this.logService = logService;
 	}
@@ -88,10 +122,18 @@ public class TabResource extends ResourceImpl
 	
 	private Properties properties = null;
 	
+	/**
+	 * Getter for the Properties
+	 * @return properties
+	 */
 	public Properties getProperties() {
 		return properties;
 	}
 
+	/**
+	 * Setter for the Properties
+	 * @param properties the properties
+	 */
 	public void setProperties(Properties properties) {
 		this.properties = properties;
 	}
@@ -101,14 +143,13 @@ public class TabResource extends ResourceImpl
 	
 /*==============================================================================================================
 /* S A V I N G . . . 
-/*==============================================================================================================
-	
-	
-	
+/*==============================================================================================================*/
+		
 	/**
-	 * Stores a a treetagger-model into tab-separated file.
+	 * Stores a treetagger model into tab separated file
+	 * @param options a map that may contain an instance of LogService and an instance of Properties, with {@link #logServiceKey} and {@link #propertiesKey} respectively as keys   
 	 */
-	public void save(java.util.Map<?,?> options) throws java.io.IOException
+ 	public void save(java.util.Map<?,?> options) throws java.io.IOException
 	{
 		if (options!=null) {
 			if (options.containsKey(logServiceKey)) {
@@ -161,7 +202,7 @@ public class TabResource extends ResourceImpl
 					{
 						Token token = document.getTokens().get(tokenIndex);
 
-						//write closing tags
+						//write end tags
 						for (int spanIndex=spanList.size()-1;spanIndex>=0;spanIndex--) {
 							Span span = spanList.get(spanIndex);
 							if (!token.getSpans().contains(span)) {
@@ -185,19 +226,25 @@ public class TabResource extends ResourceImpl
 
 						//write token data
 						fileWriter.write(token.getText());
+
+						fileWriter.write(this.separator);
 						
-						if (	(token.getAnnotations()!= null) &&
-								(token.getAnnotations().size() > 0))
-						{
-							for (Annotation anno: token.getAnnotations())
-							{
-								fileWriter.write(this.separator + anno.getValue());
-							}
-						}	
+						Annotation anno = token.getPosAnnotation();
+						if (anno!=null) {
+							fileWriter.write(anno.getValue());
+						}
+						
+						fileWriter.write(this.separator);						
+
+						anno = token.getLemmaAnnotation();
+						if (anno!=null) {
+							fileWriter.write(anno.getValue());
+						}
+
 						fileWriter.write("\n");
 					}
 
-					//write final closing tags
+					//write final end tags
 					for (int spanIndex=spanList.size()-1;spanIndex>=0;spanIndex--) {
 						Span span = spanList.get(spanIndex);
 						fileWriter.write("</" + span.getName() + ">\n");
@@ -224,14 +271,10 @@ public class TabResource extends ResourceImpl
 		
 /*==============================================================================================================
 /* L O A D I N G . . .
-/*==============================================================================================================
+/*==============================================================================================================*/
 	
-	
-	
-	/**
-	 * auxilliary method to annotate an annotatableElement with attributes from an XML opening tag 
-	 * @param XMLOpeningTag
-	 * @param annotatableElement
+	/*
+	 * auxilliary method for processing input file 
 	 */
 	private void addAttributesAsAnnotations(String tag, AnnotatableElement annotatableElement) {
 		ArrayList<SimpleEntry<String,String>> attributeValueList = XMLUtils.getAttributeValueList(tag);
@@ -249,17 +292,23 @@ public class TabResource extends ResourceImpl
 	private int fileLineCount = 0;
 	private boolean xmlDocumentOpen = false;
 	
-	private void beginDocument(String openingTag) {
+	/*
+	 * auxilliary method for processing input file 
+	 */
+	private void beginDocument(String startTag) {
 		if (this.currentDocument!=null) {
 			this.endDocument();
 		}
 		this.currentDocument = TreetaggerFactory.eINSTANCE.createDocument();
-		this.xmlDocumentOpen = (openingTag!=null);  
+		this.xmlDocumentOpen = (startTag!=null);  
 		if (this.xmlDocumentOpen) {
-			addAttributesAsAnnotations(openingTag, this.currentDocument);
+			addAttributesAsAnnotations(startTag, this.currentDocument);
 		}
 	}
 	
+	/*
+	 * auxilliary method for processing input file 
+	 */
 	private void endDocument() {
 		if (this.currentDocument!=null) {
 			if (!this.openSpans.isEmpty()) {
@@ -277,10 +326,10 @@ public class TabResource extends ResourceImpl
 						}
 					}
 				}
-				logWarning(String.format("input file '%s' (line %d): missing closing tag(s) '%s'. tag(s) will be ignored!",this.getURI().lastSegment(),this.fileLineCount,openSpanNames.substring(1)));
+				logWarning(String.format("input file '%s' (line %d): missing end tag(s) '%s'. tag(s) will be ignored!",this.getURI().lastSegment(),this.fileLineCount,openSpanNames.substring(1)));
 			}
 			if (this.xmlDocumentOpen) {
-				logWarning(String.format("input file '%s' (line %d): missing document closing tag. document will be ignored!",this.getURI().lastSegment(),this.fileLineCount));
+				logWarning(String.format("input file '%s' (line %d): missing document end tag. document will be ignored!",this.getURI().lastSegment(),this.fileLineCount));
 			} 
 			else {
 				this.getContents().add(this.currentDocument);
@@ -292,26 +341,32 @@ public class TabResource extends ResourceImpl
 		this.openSpans.clear();
 	}
 	
-	private void beginSpan(String spanName, String openingTag) {
+	/*
+	 * auxilliary method for processing input file 
+	 */
+	private void beginSpan(String spanName, String startTag) {
 		if (this.currentDocument==null) {
 			this.beginDocument(null);
 		}
 		Span span = TreetaggerFactory.eINSTANCE.createSpan();
 		this.openSpans.add(0,span);
 		span.setName(spanName);
-		addAttributesAsAnnotations(openingTag, span);
+		addAttributesAsAnnotations(startTag, span);
 	}
 
+	/*
+	 * auxilliary method for processing input file 
+	 */
 	private void endSpan(String spanName) {
 		if (this.currentDocument==null) {
-			logWarning(String.format("input file '%s' (line '%d'): closing tag '</%s>' out of nowhere. tag will be ignored!",this.getURI().lastSegment(),this.fileLineCount,spanName));
+			logWarning(String.format("input file '%s' (line '%d'): end tag '</%s>' out of nowhere. tag will be ignored!",this.getURI().lastSegment(),this.fileLineCount,spanName));
 		} 
 		else {
-			boolean matchingOpeningTagExists = false;
+			boolean matchingStartTagExists = false;
 			for (int i=0; i<this.openSpans.size(); i++) {
 				Span openSpan = this.openSpans.get(i);
 				if (openSpan.getName().equalsIgnoreCase(spanName)) {
-					matchingOpeningTagExists = true;
+					matchingStartTagExists = true;
 					if (openSpan.getTokens().isEmpty()) {
 						logWarning(String.format("input file '%s' (line %d): no tokens contained in span '<%s>'. span will be ignored!",this.getURI().lastSegment(),this.fileLineCount,openSpan.getName()));	
 					}
@@ -319,12 +374,15 @@ public class TabResource extends ResourceImpl
 					break;
 				}
 			}
-			if (!matchingOpeningTagExists) {
-				logWarning(String.format("input file '%s' (line %d): no corresponding opening tag found for closing tag '</%s>'. tag will be ignored!",this.getURI().lastSegment(),this.fileLineCount,spanName));
+			if (!matchingStartTagExists) {
+				logWarning(String.format("input file '%s' (line %d): no corresponding opening tag found for end tag '</%s>'. tag will be ignored!",this.getURI().lastSegment(),this.fileLineCount,spanName));
 			}
 		}
 	}
 	
+	/*
+	 * auxilliary method for processing input file 
+	 */
 	private void addDataRow(String row) {
 		if (row!="") {
 			if (this.currentDocument==null) {
@@ -355,6 +413,9 @@ public class TabResource extends ResourceImpl
 		}
 	}
 	
+	/*
+	 * auxilliary method for processing input file 
+	 */
 	private void setDocumentNames() {
 		String documentBaseName = this.getURI().lastSegment().split("[.]")[0];
 		int documentCount = this.getContents().size();
@@ -381,7 +442,8 @@ public class TabResource extends ResourceImpl
 	}
 	
 	/**
-	 * Loads a resource into treetagger-model from tab-seperated file.
+	 * Loads a resource into treetagger model from tab separated file.
+	 * @param options a map that may contain an instance of LogService and an instance of Properties, with {@link #logServiceKey} and {@link #propertiesKey} respectively as keys 
 	 */
 	public void load(java.util.Map<?,?> options) throws IOException
 	{
@@ -432,23 +494,23 @@ public class TabResource extends ResourceImpl
 			if (XMLUtils.isProcessingInstructionTag(line)) {
 				//do nothing; ignore processing instructions
 			}
-			else if (XMLUtils.isOpeningTag(line)) {
-				String openingTagName = XMLUtils.getName(line);
-				if (openingTagName.equalsIgnoreCase(metaTag)) {
+			else if (XMLUtils.isStartTag(line)) {
+				String startTagName = XMLUtils.getName(line);
+				if (startTagName.equalsIgnoreCase(metaTag)) {
 					this.beginDocument(line);
 				}
 				else {
-					this.beginSpan(openingTagName, line);
+					this.beginSpan(startTagName, line);
 				}
 			} 
-			else if (XMLUtils.isClosingTag(line)) {
-				String closingTagName = XMLUtils.getName(line);
-				if (closingTagName.equalsIgnoreCase(metaTag)) {
+			else if (XMLUtils.isEndTag(line)) {
+				String endTagName = XMLUtils.getName(line);
+				if (endTagName.equalsIgnoreCase(metaTag)) {
 					this.xmlDocumentOpen = false;
 					this.endDocument();
 				}
 				else {
-					this.endSpan(closingTagName);
+					this.endSpan(endTagName);
 				}
 			}
 			else {
