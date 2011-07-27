@@ -26,20 +26,28 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
 import org.osgi.service.log.LogService;
 
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.AnnotatableElement;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Annotation;
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.AnyAnnotation;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Document;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.LemmaAnnotation;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.POSAnnotation;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Span;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Token;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.TreetaggerFactory;
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.exceptions.TreetaggerModelPropertyFileInputColumnsException;
 
 /**
  * Resource for loading and saving of treetagger data
@@ -80,10 +88,18 @@ public class TabResource extends ResourceImpl
 	 */
 	public static final String propertyOutputFileEncoding = "treetagger.output.fileEncoding";	
 
+	/**
+	 * property key for the option to export any annotation  
+	 */
+	public static final String propertyExportAnyAnnotation = "treetagger.output.exportAnyAnnotation";	
+	
+	private static final Pattern inputColumnPattern = Pattern.compile("treetagger\\.input\\.column");
+	
 	//property default values
 	private static final String defaultOutputFileEncoding = "UTF-8";
 	private static final String defaultInputFileEncoding  = "UTF-8";
 	private static final String defaultMetaTag = "meta";
+	private static final String defaultExportAnyAnnotation = "true"; 
 	
 	//BOM character
 	private static final Character utf8BOM = new Character((char)0xFEFF);
@@ -171,6 +187,9 @@ public class TabResource extends ResourceImpl
 		String fileEncoding = properties.getProperty(propertyOutputFileEncoding, defaultOutputFileEncoding);
 		logInfo(String.format("using output file encoding '%s'",fileEncoding));
 		
+		boolean exportAnyAnnotation = properties.getProperty(propertyExportAnyAnnotation, defaultExportAnyAnnotation).equalsIgnoreCase("true");
+		logInfo("exporting any annotation = " + exportAnyAnnotation);	
+		
 		BufferedWriter fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.getURI().toFileString()), fileEncoding));
 		try 
 		{
@@ -189,16 +208,50 @@ public class TabResource extends ResourceImpl
 
 					Document document = (Document)content;
 					
+					//this list and this hashmap are used if any annotation is to be exported
+					//the list will contain the sorted names of all annotation names occuring on all tokens in the document
+					//the map will map from token index to another map, which maps from annotation name to AnyAnotation
+					ArrayList<String> columnNamesList = null;
+					HashMap<Integer,HashMap<String,AnyAnnotation>> tokenMap = null;
+					
+					if (exportAnyAnnotation) {
+						//calculate number of columns and collect their names
+						HashSet<String> annoNamesSet = new HashSet<String>();
+						tokenMap = new HashMap<Integer,HashMap<String,AnyAnnotation>>(); 
+						for (Integer tokenIndex=0;tokenIndex<document.getTokens().size();tokenIndex++)
+						{
+							Token token = document.getTokens().get(tokenIndex);
+							EList<Annotation> annotationList = token.getAnnotations();
+							if ((token.getPosAnnotation()!=null)&&(token.getLemmaAnnotation()!=null)&&(annotationList.size()>2)) {
+								tokenMap.put(tokenIndex, new HashMap<String,AnyAnnotation>());
+								HashMap<String,AnyAnnotation> annoMap = tokenMap.get(tokenIndex);
+								for (int annotationIndex=0;annotationIndex<annotationList.size();annotationIndex++) {
+									Annotation annotation = annotationList.get(annotationIndex);
+									if (annotation instanceof AnyAnnotation) {
+										String annotationName = annotation.getName();
+										annoNamesSet.add(annotationName);
+										annoMap.put(annotationName, (AnyAnnotation)annotation);
+									}
+								}
+							}
+						}
+						//sort columns
+						columnNamesList = new ArrayList<String>(annoNamesSet);
+						Collections.sort(columnNamesList);
+						logInfo("The following columns appear in the output file additionally to word form, part-of-speech and lemma: " + columnNamesList.toString());
+					}
+					
 					fileWriter.write(String.format("<%s",metaTag));
 					for (int i=0;i<document.getAnnotations().size();i++) {
 						Annotation annotation = document.getAnnotations().get(i);
 						fileWriter.write(String.format(" %s=\"%s\"",annotation.getName(),annotation.getValue()));
 					}
 					fileWriter.write(">\n");
-					
+		
 					ArrayList<Span> spanList = new ArrayList<Span>();
+					HashMap<String,Integer> spanNamesCounts = new HashMap<String,Integer>();
 					
-					for (int tokenIndex=0;tokenIndex<document.getTokens().size();tokenIndex++)
+					for (Integer tokenIndex=0;tokenIndex<document.getTokens().size();tokenIndex++)
 					{
 						Token token = document.getTokens().get(tokenIndex);
 
@@ -206,24 +259,85 @@ public class TabResource extends ResourceImpl
 						for (int spanIndex=spanList.size()-1;spanIndex>=0;spanIndex--) {
 							Span span = spanList.get(spanIndex);
 							if (!token.getSpans().contains(span)) {
-								fileWriter.write("</" + span.getName() + ">\n");
+								String spanName = span.getName();
+								fileWriter.write("</" + spanName + ">\n");
 								spanList.remove(span);
+								Integer spanNameCount = spanNamesCounts.get(spanName);
+								if (spanNameCount==1) {
+									spanNamesCounts.remove(spanName);
+								}
+								else {
+									spanNamesCounts.put(spanName, spanNameCount-1);
+								}
 							}
 						}
 						
-						//write opening tags
+					//calculate order for new opening tags by number of tokens contained in spans ("size" of span)
+					//if new opening spans have different sizes, the bigger ones must open before the smaller
+						
+						//for each occuring span size, a key is put into this map, mapping to a list of spans with this size 
+						HashMap<Integer,ArrayList<Span>> size2SpanlistMap = new HashMap<Integer,ArrayList<Span>>();
+						//this list is used to have all occuring sizes sortable without much converting of the maps keySet 
+						ArrayList<Integer> sizeList = new ArrayList<Integer>();
 						for (int spanIndex=token.getSpans().size()-1;spanIndex>=0;spanIndex--) {
 							Span span = token.getSpans().get(spanIndex);
+							Integer spanSize = span.getTokens().size();
 							if (!spanList.contains(span)) {
-								spanList.add(span);
-								fileWriter.write("<"+span.getName());
-								for (Annotation anno: span.getAnnotations()) {
-									fileWriter.write(" " + anno.getName() + "=\"" + anno.getValue() + "\"");
+								if (!size2SpanlistMap.containsKey(spanSize)) {
+									size2SpanlistMap.put(spanSize, new ArrayList<Span>());
+									sizeList.add(spanSize);
 								}
-								fileWriter.write(">\n");
+								size2SpanlistMap.get(spanSize).add(span);
 							}
 						}
+						Collections.sort(sizeList);
+						Collections.reverse(sizeList);
+						//write opening tags in xml conform order
+						for (int sizeIndex=0; sizeIndex<sizeList.size(); sizeIndex++) {
+							int size = sizeList.get(sizeIndex);
+							
+							
+							ArrayList<String> currentSpannames = new ArrayList<String>();
+							HashMap<String,ArrayList<Span>> currentSpanMap = new HashMap<String,ArrayList<Span>>();
+							{
+								ArrayList<Span> currentSpanlist = size2SpanlistMap.get(size);
+								for (int spanIndex=0; spanIndex<currentSpanlist.size(); spanIndex++) {
+									Span span = currentSpanlist.get(spanIndex);
+									String spanName = span.getName();
+									if (!currentSpanMap.containsKey(spanName)) {
+										currentSpannames.add(spanName);
+										currentSpanMap.put(spanName, new ArrayList<Span>());	
+									}
+									currentSpanMap.get(spanName).add(span);
+								}
+							}
+							Collections.sort(currentSpannames);
+							
+							for (int spanNameIndex=0; spanNameIndex<currentSpannames.size(); spanNameIndex++) {
+								String spansName = currentSpannames.get(spanNameIndex);
+								ArrayList<Span> currentSpanlist = currentSpanMap.get(spansName);
 
+								if (!spanNamesCounts.containsKey(spansName)) {
+									spanNamesCounts.put(spansName, currentSpanlist.size());
+								}
+								else {
+									spanNamesCounts.put(spansName, spanNamesCounts.get(spansName)+currentSpanlist.size());
+								}
+								if (spanNamesCounts.get(spansName)>1) {
+									logWarning("There are " + spanNamesCounts.get(spansName) + " spans named " + spansName + " open at the same time!");
+								}
+								for (int spanIndex=0; spanIndex<currentSpanlist.size(); spanIndex++) {
+									Span span = currentSpanlist.get(spanIndex);	
+									spanList.add(span);
+									fileWriter.write("<"+span.getName());
+									for (Annotation anno: span.getAnnotations()) {
+										fileWriter.write(" " + anno.getName() + "=\"" + anno.getValue() + "\"");
+									}
+									fileWriter.write(">\n");
+								}
+							}
+						}
+						
 						//write token data
 						fileWriter.write(token.getText());
 
@@ -241,6 +355,20 @@ public class TabResource extends ResourceImpl
 							fileWriter.write(anno.getValue());
 						}
 
+						if (exportAnyAnnotation) {
+							for (int colIndex=0;colIndex<columnNamesList.size();colIndex++) {
+								fileWriter.write(this.separator);
+								String columnName = columnNamesList.get(colIndex);
+								HashMap<String,AnyAnnotation> annoMap = tokenMap.get(tokenIndex);
+								if (annoMap!=null) {
+									anno = annoMap.get(columnName);
+									if (anno!=null) {
+										fileWriter.write(anno.getValue());
+									}
+								}
+							}
+						}
+						
 						fileWriter.write("\n");
 					}
 
@@ -291,6 +419,7 @@ public class TabResource extends ResourceImpl
 	private ArrayList<Span> openSpans = new ArrayList<Span>();
 	private int fileLineCount = 0;
 	private boolean xmlDocumentOpen = false;
+	private List<String> columnNames = null;
 	
 	/*
 	 * auxilliary method for processing input file 
@@ -388,6 +517,9 @@ public class TabResource extends ResourceImpl
 			if (this.currentDocument==null) {
 				this.beginDocument(null);
 			}
+			
+			//TODO: something about this.columnNames
+			
 			String[] tuple = row.split(separator);
 			Token token= TreetaggerFactory.eINSTANCE.createToken();
 			this.currentDocument.getTokens().add(token);
@@ -442,6 +574,81 @@ public class TabResource extends ResourceImpl
 	}
 	
 	/**
+	 * validates and return the input columns definition from the properties file
+	 */
+	protected List<String> getInputColumnNames() {
+		ArrayList<String> 		retVal 		   = new ArrayList<String>();
+		HashMap<Integer,String> columns        = new HashMap<Integer,String>(); 
+		Object[]                keyArray       = this.getProperties().keySet().toArray();
+		int                     numOfKeys      = this.getProperties().size();
+
+		String					errorMessage   = null;
+		
+		for (int keyIndex=0; keyIndex<numOfKeys; keyIndex++) {
+			
+			String key = (String)keyArray[keyIndex];
+			if (inputColumnPattern.matcher(key).find()) {
+				
+				//try to extract the number at the end of the key
+				String  indexStr = key.substring("treetagger.input.column".length());
+				String  name     = this.getProperties().getProperty(key);
+				Integer index    = null; 
+				
+				try {
+					index = Integer.valueOf(indexStr);
+				}
+				catch (NumberFormatException e) {
+					errorMessage = "Invalid property name '"+key+"': " + indexStr + " is not a valid number!";
+					logError(errorMessage);
+					throw new TreetaggerModelPropertyFileInputColumnsException(errorMessage);
+				}
+				
+				//minimal index is 1
+				if (index<=0) {
+					errorMessage = "Invalid settings in properties file: no column index less than 1 allowed!"; 
+					logError(errorMessage);
+					throw new TreetaggerModelPropertyFileInputColumnsException(errorMessage);
+				}
+				
+				//with the standard Properties class, this can never happen... 
+				if (columns.containsKey(index)) {
+					errorMessage = "Invalid settings in properties file:  More than one column is defined for index '" + index + "'"; 
+					logError(errorMessage);
+					throw new TreetaggerModelPropertyFileInputColumnsException(errorMessage);					
+				}
+
+				if (columns.containsValue(name)) {
+					errorMessage = "Invalid settings in properties file:  More than one column is defined for name '" + name + "'"; 
+					logError(errorMessage);
+					throw new TreetaggerModelPropertyFileInputColumnsException(errorMessage);					
+				}
+				
+				columns.put(index, name);
+			}
+		}
+				
+		//return defaults if nothing is set in the properties file
+		if (columns.size()==0) {
+			retVal.add("pos");
+			retVal.add("lemma");
+			return retVal;
+		}
+		
+		//check consecutivity of indexes 
+		for (int index=1; index<=columns.size(); index++) {
+			if (!columns.containsKey(index)) {
+				errorMessage = "Invalid settings in properties file: column indexes are not consecutive, column"+index+" missing!"; 
+				logError(errorMessage);
+				throw new TreetaggerModelPropertyFileInputColumnsException(errorMessage);
+			}
+			retVal.add(columns.get(index));
+		}
+
+		return retVal;
+	}
+
+	
+	/**
 	 * Loads a resource into treetagger model from tab separated file.
 	 * @param options a map that may contain an instance of LogService and an instance of Properties, with {@link #logServiceKey} and {@link #propertiesKey} respectively as keys 
 	 */
@@ -472,6 +679,8 @@ public class TabResource extends ResourceImpl
 		
 		String fileEncoding = properties.getProperty(propertyInputFileEncoding, defaultInputFileEncoding);
 		logInfo(String.format("using input file encoding '%s'",fileEncoding));
+
+		this.columnNames = getInputColumnNames();
 		
 		if (this.getURI()== null) {
 			String errorMessage = "Cannot load any resource, because no uri is given.";
