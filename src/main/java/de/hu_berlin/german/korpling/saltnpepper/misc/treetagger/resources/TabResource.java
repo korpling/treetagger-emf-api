@@ -59,6 +59,9 @@ public class TabResource extends ResourceImpl
 	//column seperator
 	private String separator= "\t";
 	
+	private String POSName = "pos";
+	private String LemmaName = "lemma";
+	
 	/**
 	 * Key for the LogService in the options map of load and save methods
 	 */
@@ -419,7 +422,9 @@ public class TabResource extends ResourceImpl
 	private ArrayList<Span> openSpans = new ArrayList<Span>();
 	private int fileLineCount = 0;
 	private boolean xmlDocumentOpen = false;
-	private List<String> columnNames = null;
+	private HashMap<Integer,String> columnMap = null;
+	private int numOfDataRowsWithToMuchColumns = 0;
+	private int numOfDataRowsWithToLessColumns = 0;	
 	
 	/*
 	 * auxilliary method for processing input file 
@@ -517,9 +522,6 @@ public class TabResource extends ResourceImpl
 			if (this.currentDocument==null) {
 				this.beginDocument(null);
 			}
-			
-			//TODO: something about this.columnNames
-			
 			String[] tuple = row.split(separator);
 			Token token= TreetaggerFactory.eINSTANCE.createToken();
 			this.currentDocument.getTokens().add(token);
@@ -529,18 +531,28 @@ public class TabResource extends ResourceImpl
 				token.getSpans().add(span);
 				span.getTokens().add(token);
 			}
-			if (tuple.length>1) {
-				POSAnnotation posAnno= TreetaggerFactory.eINSTANCE.createPOSAnnotation();
-				posAnno.setValue(tuple[1]);
-				token.getAnnotations().add(posAnno);
-				if (tuple.length>2) { 
-					LemmaAnnotation lemmaAnno= TreetaggerFactory.eINSTANCE.createLemmaAnnotation();
-					lemmaAnno.setValue(tuple[2]);
-					token.getAnnotations().add(lemmaAnno);
-					if (tuple.length>3) {
-						logWarning(String.format("input file '%s' (line %d): %d data columns found, but only 3 expected. additional columns will be ignored! ",this.getURI().lastSegment(),this.fileLineCount,tuple.length));
-					}
+			
+			if (tuple.length>this.columnMap.size()+1) {
+				this.numOfDataRowsWithToMuchColumns++;
+			}
+			else if (tuple.length<=this.columnMap.size()) {
+				this.numOfDataRowsWithToLessColumns++;
+			}
+
+			for (int index=1; index<Math.min(this.columnMap.size()+1,tuple.length); index++) {
+				Annotation anno = null;
+				String columnName = this.columnMap.get(index);
+				if (columnName.equalsIgnoreCase(this.POSName)) {
+					anno = TreetaggerFactory.eINSTANCE.createPOSAnnotation();
+				} 
+				else if (columnName.equalsIgnoreCase(this.LemmaName)) {
+					anno = TreetaggerFactory.eINSTANCE.createLemmaAnnotation();
 				}
+				else {
+					anno = TreetaggerFactory.eINSTANCE.createAnyAnnotation();
+					anno.setName(columnName); 
+				}
+				anno.setValue(tuple[index]);
 			}
 		}
 	}
@@ -576,13 +588,11 @@ public class TabResource extends ResourceImpl
 	/**
 	 * validates and return the input columns definition from the properties file
 	 */
-	protected List<String> getInputColumnNames() {
-		ArrayList<String> 		retVal 		   = new ArrayList<String>();
-		HashMap<Integer,String> columns        = new HashMap<Integer,String>(); 
-		Object[]                keyArray       = this.getProperties().keySet().toArray();
-		int                     numOfKeys      = this.getProperties().size();
-
-		String					errorMessage   = null;
+	protected HashMap<Integer,String> getColumns() {
+		HashMap<Integer,String> retVal       = new HashMap<Integer,String>(); 
+		Object[]                keyArray     = this.getProperties().keySet().toArray();
+		int                     numOfKeys    = this.getProperties().size();
+		String					errorMessage = null;
 		
 		for (int keyIndex=0; keyIndex<numOfKeys; keyIndex++) {
 			
@@ -611,39 +621,37 @@ public class TabResource extends ResourceImpl
 				}
 				
 				//with the standard Properties class, this can never happen... 
-				if (columns.containsKey(index)) {
+				if (retVal.containsKey(index)) {
 					errorMessage = "Invalid settings in properties file:  More than one column is defined for index '" + index + "'"; 
 					logError(errorMessage);
 					throw new TreetaggerModelPropertyFileInputColumnsException(errorMessage);					
 				}
 
-				if (columns.containsValue(name)) {
+				if (retVal.containsValue(name)) {
 					errorMessage = "Invalid settings in properties file:  More than one column is defined for name '" + name + "'"; 
 					logError(errorMessage);
 					throw new TreetaggerModelPropertyFileInputColumnsException(errorMessage);					
 				}
 				
-				columns.put(index, name);
+				retVal.put(index, name);
 			}
 		}
 				
 		//return defaults if nothing is set in the properties file
-		if (columns.size()==0) {
-			retVal.add("pos");
-			retVal.add("lemma");
+		if (retVal.size()==0) {
+			retVal.put(1,this.POSName);
+			retVal.put(2,this.LemmaName);
 			return retVal;
 		}
 		
 		//check consecutivity of indexes 
-		for (int index=1; index<=columns.size(); index++) {
-			if (!columns.containsKey(index)) {
+		for (int index=1; index<=retVal.size(); index++) {
+			if (!retVal.containsKey(index)) {
 				errorMessage = "Invalid settings in properties file: column indexes are not consecutive, column"+index+" missing!"; 
 				logError(errorMessage);
 				throw new TreetaggerModelPropertyFileInputColumnsException(errorMessage);
 			}
-			retVal.add(columns.get(index));
 		}
-
 		return retVal;
 	}
 
@@ -680,7 +688,7 @@ public class TabResource extends ResourceImpl
 		String fileEncoding = properties.getProperty(propertyInputFileEncoding, defaultInputFileEncoding);
 		logInfo(String.format("using input file encoding '%s'",fileEncoding));
 
-		this.columnNames = getInputColumnNames();
+		this.columnMap = getColumns();
 		
 		if (this.getURI()== null) {
 			String errorMessage = "Cannot load any resource, because no uri is given.";
@@ -730,5 +738,12 @@ public class TabResource extends ResourceImpl
 		fileReader.close();
 
 		this.setDocumentNames();
+		
+		if (this.numOfDataRowsWithToLessColumns>0) {
+			logWarning(this.numOfDataRowsWithToLessColumns+" rows in input file had less data columns than expected!");
+		}
+		if (this.numOfDataRowsWithToMuchColumns>0) {
+			logWarning(this.numOfDataRowsWithToMuchColumns+" rows in input file had more data columns than expected! Additional data was ignored!");
+		}
 	}
 }
