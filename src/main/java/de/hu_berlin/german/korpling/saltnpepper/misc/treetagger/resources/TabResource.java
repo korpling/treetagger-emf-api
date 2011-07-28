@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -41,9 +40,9 @@ import org.osgi.service.log.LogService;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.AnnotatableElement;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Annotation;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.AnyAnnotation;
-import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Document;
-import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.LemmaAnnotation;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.POSAnnotation;
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.LemmaAnnotation;
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Document;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Span;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Token;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.TreetaggerFactory;
@@ -544,13 +543,16 @@ public class TabResource extends ResourceImpl
 				String columnName = this.columnMap.get(index);
 				if (columnName.equalsIgnoreCase(this.POSName)) {
 					anno = TreetaggerFactory.eINSTANCE.createPOSAnnotation();
+					token.setPosAnnotation((POSAnnotation)anno);
 				} 
 				else if (columnName.equalsIgnoreCase(this.LemmaName)) {
 					anno = TreetaggerFactory.eINSTANCE.createLemmaAnnotation();
+					token.setLemmaAnnotation((LemmaAnnotation)anno);					
 				}
 				else {
 					anno = TreetaggerFactory.eINSTANCE.createAnyAnnotation();
 					anno.setName(columnName); 
+					token.getAnnotations().add(anno);
 				}
 				anno.setValue(tuple[index]);
 			}
