@@ -42,7 +42,7 @@ public class Token
 	public String toString()
 	{
 		String retVal= "";
-		retVal="expectedToken.add(\""+text+"\");";
+		retVal=text;
 		return(retVal);
 	}
 	/**

@@ -133,6 +133,8 @@ public class TTTokenizerTest extends TestCase
 		}
 	}
 	
+	
+	
 	/**
 	 * checks the following text via TokenizeToText:
 	 * "Die �lpest im Golf von Mexiko sei eine \"f�rchterliche Trag�die, f�r die ich als Verantwortlicher bei BP immer eine gro�e Verantwortung f�hlen werde\", erkl�rte der scheidende Konzernchef Hayward. BP werde sich durch den Vorfall ver�ndern und solle unter neuer F�hrung in diese Phase starten, begr�ndete er seinen R�ckzug zum 1. Oktober."
@@ -280,6 +282,36 @@ public class TTTokenizerTest extends TestCase
 		expectedToken.add(new Token("�lpest", 4, 10));
 		this.getFixture().setLngLang(TTLanguages.de);
 		retTokens= this.getFixture().tokenizeToToken(text);
+		assertEquals(expectedToken.size(), retTokens.size());
+		for (int i= 0; i< expectedToken.size(); i++)
+		{
+			assertEquals(expectedToken.get(i), retTokens.get(i));
+		}
+	}
+	
+	/**
+	 * checks the following text via TokenizeToToken:
+	 * "O.K., so the answer's obvious."
+	 */
+	public void testCase7()
+	{
+		String text= "O.K., so the answer's obvious.";
+		List<Token> expectedToken= new Vector<Token>();
+		expectedToken.add(new Token("O", 0, 1));
+		expectedToken.add(new Token(".", 1, 2));
+		expectedToken.add(new Token("K", 2, 3));
+		expectedToken.add(new Token(".", 3, 4));
+		expectedToken.add(new Token(",", 4, 5));
+		expectedToken.add(new Token("so", 6, 7));
+		expectedToken.add(new Token("the", 9, 11));
+		expectedToken.add(new Token("answer's", 13, 20));
+		expectedToken.add(new Token("obvious", 21, 27));
+		expectedToken.add(new Token(".", 27, 28));
+		
+		this.getFixture().setLngLang(TTLanguages.de);
+		List<Token> retTokens= this.getFixture().tokenizeToToken(text);
+		System.out.println("retTokens: "+ retTokens);
+		
 		assertEquals(expectedToken.size(), retTokens.size());
 		for (int i= 0; i< expectedToken.size(); i++)
 		{

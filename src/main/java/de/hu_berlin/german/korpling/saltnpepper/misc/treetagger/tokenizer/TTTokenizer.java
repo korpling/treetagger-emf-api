@@ -367,7 +367,7 @@ public class TTTokenizer
                    //attempt to separate proclitics
                    p = Pattern.compile("^(" + PClitic + ")(.+)");
                    m = p.matcher(lstTokens.get(i));
-                   if (m.find() && !PClitic.equals(""))
+                   if (m.find() && !PClitic.isEmpty())
                    {
                       lstTokens.remove(i);
                       lstTokens.add(i, m.group(2));
@@ -377,7 +377,7 @@ public class TTTokenizer
                    //attempt to separate enclitics
                     p = Pattern.compile("(.+)(" + FClitic + ")$");
                     m = p.matcher(lstTokens.get(i));
-                   if (m.find() && !FClitic.equals(""))
+                   if (m.find() && !FClitic.isEmpty())
                    {
                       lstTokens.remove(i);
                       lstTokens.add(i, m.group(2));
@@ -395,7 +395,7 @@ public class TTTokenizer
                       lstTokens.add(i, m.group(1));
 
                       //cut off trailing periods if punctuation precedes
-                      p = Pattern.compile("(\\.)$");
+                      p = Pattern.compile("(.+)(\\.)$");
                       m = p.matcher(lstTokens.get(i));
                       if (m.find())
                       {
@@ -412,12 +412,4 @@ public class TTTokenizer
         return lstTokens;
     }
 // ======================= end: important issues
-    
-    /**
-     * @param args the command line arguments
-     */
-     public static void main(String[] args) throws UnsupportedEncodingException, FileNotFoundException, IOException 
-     {  
-    	//TODO implement a possibility to convert a textfile to a tokenized one in e.g. Treetagger-format
-     }
 }
