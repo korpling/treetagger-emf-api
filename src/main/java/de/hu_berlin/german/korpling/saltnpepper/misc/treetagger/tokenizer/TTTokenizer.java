@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
@@ -130,13 +131,13 @@ public class TTTokenizer
 	}
 //=============================== end: abbreviation folder	
 //=============================== start: abbreviation
-	private Hashtable<String, Boolean> hashAbbreviations = null;
+	private HashSet<String> hashAbbreviations = null;
 	    
-	public Hashtable<String, Boolean> getHashAbbreviations() {
+	public HashSet<String> getHashAbbreviations() {
 		return hashAbbreviations;
 	}
 
-	public void setHashAbbreviations(Hashtable<String, Boolean> hashAbbreviations) {
+	public void setHashAbbreviations(HashSet<String> hashAbbreviations) {
 		this.hashAbbreviations = hashAbbreviations;
 	}
 //=============================== end: abbreviation
@@ -152,7 +153,7 @@ public class TTTokenizer
     {
     	try 
     	{
-    		this.setHashAbbreviations(new Hashtable<String, Boolean>());
+    		this.setHashAbbreviations(new HashSet<String>());
             
     		BufferedReader inReader;
 		
@@ -163,7 +164,7 @@ public class TTTokenizer
 			while((input = inReader.readLine()) != null)
 			{
 	           //putting
-	           hashAbbreviations.put(input, true);
+	           hashAbbreviations.add(input);
 			}
 			inReader.close();
 			
@@ -374,7 +375,7 @@ public class TTTokenizer
                }
 
                //check abbreviation list
-               if (hashAbbreviations.containsKey(lstTokens.get(i)))
+               if (hashAbbreviations.contains(lstTokens.get(i)))
                {
                    //known abbreviation found
                    continue;
