@@ -297,18 +297,16 @@ public class TTTokenizerTest extends TestCase
 	{
 		String text= "O.K., so the answer's obvious.";
 		List<Token> expectedToken= new Vector<Token>();
-		expectedToken.add(new Token("O", 0, 1));
-		expectedToken.add(new Token(".", 1, 2));
-		expectedToken.add(new Token("K", 2, 3));
-		expectedToken.add(new Token(".", 3, 4));
-		expectedToken.add(new Token(",", 4, 5));
-		expectedToken.add(new Token("so", 6, 7));
-		expectedToken.add(new Token("the", 9, 11));
-		expectedToken.add(new Token("answer's", 13, 20));
-		expectedToken.add(new Token("obvious", 21, 27));
-		expectedToken.add(new Token(".", 27, 28));
+		expectedToken.add(new Token("O.K.", 0, 4));
+                expectedToken.add(new Token(",", 4, 5));
+		expectedToken.add(new Token("so", 6, 8));
+		expectedToken.add(new Token("the", 9, 12));
+		expectedToken.add(new Token("answer", 13, 19));
+		expectedToken.add(new Token("'s", 19, 21));
+		expectedToken.add(new Token("obvious", 22, 29));
+		expectedToken.add(new Token(".", 29, 30));
 		
-		this.getFixture().setLngLang(TTLanguages.de);
+		this.getFixture().setLngLang(TTLanguages.en);
 		List<Token> retTokens= this.getFixture().tokenizeToToken(text);
 		System.out.println("retTokens: "+ retTokens);
 		

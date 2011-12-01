@@ -32,13 +32,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.exceptions.TTTokenizerException;
+import java.util.ArrayList;
 
 
 /**
  * The general task of this class is to tokenize a given text in the same order as the tool TreeTagger will do. 
- * A list of tokenized text is returned with the text anchor (start and end position) in original text.  
+ * A list of tokenized text is returned with the text anchor (start and end position) in original text.
+ * Reimplemented in Java with permission from the original TreeTagger tokenizer in Perl by Helmut Schmid 
+ * (see http://www.ims.uni-stuttgart.de/projekte/corplex/TreeTagger/).
  *  
- * @author ling_az
+ * @author Amir Zeldes
+ * 
  *
  */
 public class TTTokenizer 
@@ -224,11 +228,14 @@ public class TTTokenizer
             switch (lngLang){
                 case en:
                     this.FClitic = "('(s|re|ve|d|m|em|ll)|n't)";
+                    break;
                 case fr:
                     this.PClitic = "([dcjlmnstDCJLNMST]'|[Qq]u'|[Jj]usqu'|[Ll]orsqu')";
                     this.FClitic = "(-t-elles?|-t-ils?|-t-on|-ce|-elles?|-ils?|-je|-la|-les?|-leur|-lui|-mêmes?|-m'|-moi|-nous|-on|-toi|-tu|-t'|-vous|-en|-y|-ci|-là)";
+                    break;
                 case it:
                     this.PClitic = "([dD][ae]ll'|[nN]ell'|[Aa]ll'|[lLDd]'|[Ss]ull'|[Qq]uest'|[Uu]n'|[Ss]enz'|[Tt]utt')";
+                    break;
                 case de: //do nothing
 
             }
@@ -322,93 +329,106 @@ public class TTTokenizer
         //split based on whitespace
         strOutput = strInput.split(" ");
 
-        List<String> lstTokens = new Vector<String>(Arrays.asList(strOutput));
+        ArrayList<String> lstTokens = new ArrayList<String>(Arrays.asList(strOutput));
+        Pattern p = null;
+        Matcher m = null;
+        Pattern p2 = null;
+        Matcher m2 = null;
         
            for (int i=0; i < lstTokens.size();i++)
            {
+               
+               //cut off preceding punctuation 
+               p = Pattern.compile("^([" + PChar + "])(.+)");
+               m = p.matcher(lstTokens.get(i));
+               if (m.find())
+               {
+                  lstTokens.remove(i);
+                  lstTokens.add(i, m.group(2));
+                  lstTokens.add(i, m.group(1));
+                  continue; //advance further in the loop, checking the token without preceding punctuation
+               }               
+               
+               //cut off trailing punctuation 
+               p = Pattern.compile("^(.+)([" + FChar + "])$");
+               m = p.matcher(lstTokens.get(i));
+               if (m.find())
+               {
+                  lstTokens.remove(i);
+                  lstTokens.add(i, m.group(2));
+                  lstTokens.add(i, m.group(1));
+                  i--; //do not advance, the token needs to be checked without trailing punctuation
+                  continue; //repeat the loop, checking the same token without trailing punctuation
+               }
+
+               //cut off trailing periods if punctuation precedes
+               p = Pattern.compile("^(.+[" + FChar + "])(\\.)$");
+               m = p.matcher(lstTokens.get(i));
+               if (m.find())
+               {
+                  lstTokens.remove(i);
+                  lstTokens.add(i, m.group(2));
+                  lstTokens.add(i, m.group(1));
+                  i--; //do not advance, the token needs to be checked without trailing period
+                  continue; //repeat the loop, checking the same token without trailing period
+               }
+
+               //check abbreviation list
                if (hashAbbreviations.containsKey(lstTokens.get(i)))
                {
                    //known abbreviation found
-                   //do nothing
+                   continue;
                }
-               else
+
+               //abbreviations of the form A. or U.S.A.
+               p = Pattern.compile("^([A-Za-zÁÂÃÈý®Ð×ÝÞÍðÎÓÔÕØÙãõš›€ß‚ƒ„‡ˆ‰Š‹ŒŽøŸ÷·”“’]\\.)+$");
+               m = p.matcher(lstTokens.get(i));
+               if (m.find())
                {
-                   //([A-Za-zÁÂÃÈý®Ð×ÝÞÍðÎÓÔÕØÙãõš›€ß‚ƒ„‡ˆ‰Š‹ŒŽøŸ÷·”“’]\\.)+
-                   //^(\\.\\.\\.|[0-9]+\\.)$
-                   Pattern p = Pattern.compile("^(..*)(\\.)$");
-                   Matcher m = p.matcher(lstTokens.get(i));
-                   Pattern p2 = Pattern.compile("^(\\.\\.\\.|[0-9]+\\.)$");
-                   Matcher m2 = p2.matcher(lstTokens.get(i));
-
-                   if (m.find() && !m2.find())
-                   {
-                      lstTokens.remove(i);
-                      lstTokens.add(i, m.group(2));
-                      lstTokens.add(i, m.group(1));
-                      i--; //period separated, this token should be repeated
-                      
-                       //Abbreviation of the sort U.S.A., a number like 0.343 or ...
-                       //(The behavior for numbers seems incorrect but reproduces the behavior of the Perl TTTokenizer)
-                       //Do nothing
-                   }
-                   else
-                   {
-                   //not an abbreviation
-                   //attempt to separate prefixes
-                   p = Pattern.compile("^([" + PChar + "])(.+)");
-                   m = p.matcher(lstTokens.get(i));
-                   if (m.find())
-                   {
-                      lstTokens.remove(i);
-                      lstTokens.add(i, m.group(2));
-                      lstTokens.add(i, m.group(1));
-                      i++; //advance one token, since we are past the prefix
-                   }
-                   //attempt to separate proclitics
-                   p = Pattern.compile("^(" + PClitic + ")(.+)");
-                   m = p.matcher(lstTokens.get(i));
-                   if (m.find() && !PClitic.isEmpty())
-                   {
-                      lstTokens.remove(i);
-                      lstTokens.add(i, m.group(2));
-                      lstTokens.add(i, m.group(1));
-                      i++; //advance one token, since we are past the proclitic
-                   }
-                   //attempt to separate enclitics
-                    p = Pattern.compile("(.+)(" + FClitic + ")$");
-                    m = p.matcher(lstTokens.get(i));
-                   if (m.find() && !FClitic.isEmpty())
-                   {
-                      lstTokens.remove(i);
-                      lstTokens.add(i, m.group(2));
-                      lstTokens.add(i, m.group(1));
-                      i++; //advance one token to get to the enclitic
-                   }
-
-                   //attempt to separate suffixes
-                    p = Pattern.compile("(.+)([" + FChar + "])$");
-                    m = p.matcher(lstTokens.get(i));
-                   if (m.find())
-                   {
-                      lstTokens.remove(i);
-                      lstTokens.add(i, m.group(2));
-                      lstTokens.add(i, m.group(1));
-
-                      //cut off trailing periods if punctuation precedes
-                      p = Pattern.compile("(.+)(\\.)$");
-                      m = p.matcher(lstTokens.get(i));
-                      if (m.find())
-                      {
-                          lstTokens.remove(i);
-                          lstTokens.add(i, m.group(2));
-                          lstTokens.add(i, m.group(1));
-                          i++; //advance one token to the trailing period
-                      }
-                      i--; //advance one token to get to the suffix
-                   }
+                  continue; //leave this acronym token alone and advance the loop
                }
+               
+               //disambiguate periods
+               p = Pattern.compile("^(.+)(\\.)$");
+               m = p.matcher(lstTokens.get(i));
+               p2 = Pattern.compile("^(\\.\\.\\.|[0-9]+\\.)$");
+               m2 = p2.matcher(lstTokens.get(i));
+               if (m.find() && !m2.find())
+               {
+                  lstTokens.remove(i);
+                  lstTokens.add(i, m.group(2));
+                  lstTokens.add(i, m.group(1));
+                  i++; //no need to check next token, as it is a separate period
+                  continue; //advance the loop
+               }
+
+                //attempt to separate proclitics
+                p = Pattern.compile("^(" + PClitic + ")(.+)$");
+                m = p.matcher(lstTokens.get(i));
+               if (m.find() && !PClitic.isEmpty())
+               {
+                  lstTokens.remove(i);
+                  lstTokens.add(i, m.group(2));
+                  lstTokens.add(i, m.group(1));
+                  continue; //proclitic has been removed, but next token must still be checked
+               }
+
+               //attempt to separate enclitics
+               p = Pattern.compile("(.+)(" + FClitic + ")$");
+               m = p.matcher(lstTokens.get(i));
+               if (m.find() && !FClitic.isEmpty())
+               {
+                  lstTokens.remove(i);
+                  lstTokens.add(i, m.group(2));
+                  lstTokens.add(i, m.group(1));
+                  i++; //next token is a known enclitic, skip it
+                  continue; //advance to get past the enclitic
+               }
+
+                   
+               
            }
-        }
+        
         return lstTokens;
     }
 // ======================= end: important issues
