@@ -382,16 +382,7 @@ public class TTTokenizer
     public List<Token> tokenizeToToken(String strInput) 
     {
     	List<Token> retVal= null;
-    	
-//    	if (this.getLngLang()== null)
-//    		throw new TTTokenizerException("Cannot start tokenization, no language is set so far.");
-//    	
-//    	if (this.abbreviationFolder== null)
-//    		throw new TTTokenizerException("Cannot start tokenization, no folder containing the abbreviation is set so far.");
-    	
-//    	this.setClitics(this.getLngLang());
-//    	this.readAbbreviations(this.getAbbreviationFile(this.getAbbreviationFolder(), this.getLngLang()));
-    	
+   	
     	List<String> strTokens = null;
     	strTokens= this.tokenizeToString(strInput);
     	if (	(strTokens!= null)&&
@@ -437,31 +428,33 @@ public class TTTokenizer
      */
     public List<String> tokenizeToString(String strInput) 
     {
-    	System.out.println("before language computed: "+ this.getLngLang());
+    	if (	(strInput== null)||
+    			(strInput.isEmpty()))
+    		return(null);
     	if (this.getLngLang()== null)
     	{
     		ISO639_LANGUAGE_CODE lang= LanguageDetector.detectLanguage(strInput);
-    		switch (lang) {
-			case ENG:
-				this.setLngLang(TT_LANGUAGES.EN);
-				break;
-			case FRE_FRA:
-				this.setLngLang(TT_LANGUAGES.FR);
-				break;
-			case GER_DEU:
-				this.setLngLang(TT_LANGUAGES.DE);
-				break;
-			case ITA:
-				this.setLngLang(TT_LANGUAGES.IT);
-				break;
-			default:
-				break;
-			}
-    		System.out.println("language computed: "+ this.getLngLang());
-    		
-    		this.resetAbbreviations(this.getLngLang());
+    		if (lang!= null)
+    		{
+	    		switch (lang) {
+				case ENG:
+					this.setLngLang(TT_LANGUAGES.EN);
+					break;
+				case FRE_FRA:
+					this.setLngLang(TT_LANGUAGES.FR);
+					break;
+				case GER_DEU:
+					this.setLngLang(TT_LANGUAGES.DE);
+					break;
+				case ITA:
+					this.setLngLang(TT_LANGUAGES.IT);
+					break;
+				default:
+					break;
+				}
+	    		this.resetAbbreviations(this.getLngLang());
+    		}
     	}
-    	System.out.println("language normal: "+ this.getLngLang());
     	this.setClitics(this.getLngLang());
 
         //insert missing blanks after punctuation
