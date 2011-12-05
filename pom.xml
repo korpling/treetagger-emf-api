@@ -154,7 +154,7 @@
           <noticeTemplate>./src/etc/NOTICE_template.txt</noticeTemplate>
           <licenseMapping>
 				<param>https://source.jasig.org/licenses/license-mappings.xml</param>
-				<param>d:/projects_work/SaltNPepper/resources/misc/misc-TreetaggerModel/src/etc/license-mappings.xml</param>
+				<param>./src/etc/license-mappings.xml</param>
     		</licenseMapping>
         </configuration>
       </plugin>
