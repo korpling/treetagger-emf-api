@@ -33,6 +33,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.exceptions.TTTokenizerException;
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.language.ISO639_LANGUAGE_CODE;
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.language.LanguageDetector;
 
 
 /**
@@ -52,10 +54,8 @@ import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.exceptions.TTTok
  */
 public class TTTokenizer 
 {
-    public enum TT_LANGUAGES {de,en,fr,it};
+    public enum TT_LANGUAGES {DE,EN,FR,IT};
    
-   
-
 	/**
      * Initializes a new TTokenizer object.
      */
@@ -118,8 +118,7 @@ public class TTTokenizer
     /**
      * the language of the text to be tokenized
      */
-    private TT_LANGUAGES lngLang = TT_LANGUAGES.de;
-    
+    private TT_LANGUAGES lngLang = null;
     /**
      * Sets the language of the text which shall be tokenized.
 	 * @param lngLang the lngLang to set
@@ -201,6 +200,84 @@ public class TTTokenizer
 	}
 	
 	/**
+	 * Resets the table of abbreviations for instance, when the language has changed.
+	 * @param language
+	 * @return
+	 */
+	private HashSet<String> resetAbbreviations(TT_LANGUAGES language)
+	{
+		HashSet<String> retVal= null;
+		if (this.getAbbreviationFile()!= null)
+		{
+			retVal= this.readAbbreviations(this.getAbbreviationFile());
+		}
+		else if (this.getAbbreviationFolder()!= null)
+		{
+			File abbrFile= null;
+			if (language!= null)
+			{
+				switch (language) {
+				case DE:
+					abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_DE);
+					retVal= this.readAbbreviations(abbrFile);
+					break;
+				case EN:
+					abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_EN);
+					retVal= this.readAbbreviations(abbrFile);
+					break;
+				case FR:
+					abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_FR);
+					retVal= this.readAbbreviations(abbrFile);
+					break;
+				case IT:
+					abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_IT);
+					retVal= this.readAbbreviations(abbrFile);
+					break;
+				}
+			}
+			else
+			{
+				abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_DE);
+				retVal= this.readAbbreviations(abbrFile);
+				abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_EN);
+				retVal.addAll(this.readAbbreviations(abbrFile));
+				abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_FR);
+				retVal.addAll(this.readAbbreviations(abbrFile));
+				abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_IT);
+				retVal.addAll(this.readAbbreviations(abbrFile));
+			}
+		}
+		else
+		{
+			if (language!= null)
+			{
+				switch (language) {
+				case DE:
+					retVal= AbbreviationDE.createAbbriviations();
+					break;
+				case EN:
+					retVal= AbbreviationEN.createAbbriviations();
+					break;
+				case FR:
+					retVal= AbbreviationFR.createAbbriviations();
+					break;
+				case IT:
+					retVal= AbbreviationIT.createAbbriviations();
+					break;
+				}
+			}
+			else 
+			{
+				retVal= AbbreviationDE.createAbbriviations();
+				retVal.addAll(AbbreviationEN.createAbbriviations());
+				retVal.addAll(AbbreviationFR.createAbbriviations());
+				retVal.addAll(AbbreviationIT.createAbbriviations());
+			}
+		}
+		return(retVal);
+	}
+	
+	/**
 	 * Returns a set of available abbreviations concerning the given language. If no language is given, all available
 	 * abbreviations will be returned. The order of searching for abbreviations is the following:
 	 * <ol>
@@ -216,74 +293,8 @@ public class TTTokenizer
 			retVal= currentAbbreviations;
 		else
 		{//abbreviations aren't set yet
-			if (this.getAbbreviationFile()!= null)
-			{
-				retVal= this.readAbbreviations(this.getAbbreviationFile());
-			}
-			else if (this.getAbbreviationFolder()!= null)
-			{
-				File abbrFile= null;
-				if (language!= null)
-				{
-					switch (language) {
-					case de:
-						abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_DE);
-						retVal= this.readAbbreviations(abbrFile);
-						break;
-					case en:
-						abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_EN);
-						retVal= this.readAbbreviations(abbrFile);
-						break;
-					case fr:
-						abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_FR);
-						retVal= this.readAbbreviations(abbrFile);
-						break;
-					case it:
-						abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_IT);
-						retVal= this.readAbbreviations(abbrFile);
-						break;
-					}
-				}
-				else
-				{
-					abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_DE);
-					retVal= this.readAbbreviations(abbrFile);
-					abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_EN);
-					retVal.addAll(this.readAbbreviations(abbrFile));
-					abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_FR);
-					retVal.addAll(this.readAbbreviations(abbrFile));
-					abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_IT);
-					retVal.addAll(this.readAbbreviations(abbrFile));
-				}
-			}
-			else
-			{
-				if (language!= null)
-				{
-					switch (language) {
-					case de:
-						retVal= AbbreviationDE.createAbbriviations();
-						break;
-					case en:
-						retVal= AbbreviationEN.createAbbriviations();
-						break;
-					case fr:
-						retVal= AbbreviationFR.createAbbriviations();
-						break;
-					case it:
-						retVal= AbbreviationIT.createAbbriviations();
-						break;
-					}
-				}
-				else 
-				{
-					retVal= AbbreviationDE.createAbbriviations();
-					retVal.addAll(AbbreviationEN.createAbbriviations());
-					retVal.addAll(AbbreviationFR.createAbbriviations());
-					retVal.addAll(AbbreviationIT.createAbbriviations());
-				}
-			}
-			currentAbbreviations= retVal;
+			this.currentAbbreviations= resetAbbreviations(language);
+			retVal= this.currentAbbreviations; 
 		}//abbreviations aren't set yet
 		return(retVal);
 	}
@@ -324,34 +335,6 @@ public class TTTokenizer
 		}
 		return(abbreviations);
     }
-    
-//    private static Hashtable<TT_LANGUAGES, File> languageAbbreviationFileTable= null;
-//    {
-//    	languageAbbreviationFileTable= new Hashtable<TTTokenizer.TT_LANGUAGES, File>();
-//    	languageAbbreviationFileTable.put(TT_LANGUAGES.it, new File("italian-abbreviations"));
-//    	languageAbbreviationFileTable.put(TT_LANGUAGES.de, new File("german-abbreviations"));
-//    	languageAbbreviationFileTable.put(TT_LANGUAGES.fr, new File("french-abbreviations"));
-//    	languageAbbreviationFileTable.put(TT_LANGUAGES.en, new File("english-abbreviations"));
-//    }
-    
-//    /**
-//     * Returns an abbreviation file generated out of the given abbreviation folder and the given language.
-//     * @param abbreviationFolder
-//     * @param language
-//     * @return file of matching abbreviation
-//     */
-//    private File getAbbreviationFile(File abbreviationFolder, TT_LANGUAGES language)
-//    {
-//    	File abbreviationFile= null;
-//    	if (language== null)
-//    		throw new TTTokenizerException("Cannot start tokenization, no language is set so far.");
-//    	
-//    	if (abbreviationFolder== null)
-//    		throw new TTTokenizerException("Cannot start tokenization, no folder containing the abbreviation is set so far.");
-//    	
-//    	abbreviationFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+languageAbbreviationFileTable.get(language));
-//    	return(abbreviationFile);
-//    }
 
 //======================= start: important issues
  // characters which have to be cut off at the beginning of a word
@@ -374,17 +357,17 @@ public class TTTokenizer
         {
             this.setLngLang(lngLang);
             switch (lngLang){
-                case en:
+                case EN:
                     this.FClitic = "('(s|re|ve|d|m|em|ll)|n't)";
                     break;
-                case fr:
+                case FR:
                     this.PClitic = "([dcjlmnstDCJLNMST]'|[Qq]u'|[Jj]usqu'|[Ll]orsqu')";
                     this.FClitic = "(-t-elles?|-t-ils?|-t-on|-ce|-elles?|-ils?|-je|-la|-les?|-leur|-lui|-mêmes?|-m'|-moi|-nous|-on|-toi|-tu|-t'|-vous|-en|-y|-ci|-là)";
                     break;
-                case it:
+                case IT:
                     this.PClitic = "([dD][ae]ll'|[nN]ell'|[Aa]ll'|[lLDd]'|[Ss]ull'|[Qq]uest'|[Uu]n'|[Ss]enz'|[Tt]utt')";
                     break;
-                case de: //do nothing
+                case DE: //do nothing
 
             }
         }
@@ -406,7 +389,7 @@ public class TTTokenizer
 //    	if (this.abbreviationFolder== null)
 //    		throw new TTTokenizerException("Cannot start tokenization, no folder containing the abbreviation is set so far.");
     	
-    	this.setClitics(this.getLngLang());
+//    	this.setClitics(this.getLngLang());
 //    	this.readAbbreviations(this.getAbbreviationFile(this.getAbbreviationFolder(), this.getLngLang()));
     	
     	List<String> strTokens = null;
@@ -454,14 +437,32 @@ public class TTTokenizer
      */
     public List<String> tokenizeToString(String strInput) 
     {
-//    	if (this.getLngLang()== null)
-//    		throw new TTTokenizerException("Cannot start tokenization, no language is set so far.");
-//    	
-//    	if (this.abbreviationFolder== null)
-//    		throw new TTTokenizerException("Cannot start tokenization, no folder containing the abbreviation is set so far.");
-    	
+    	System.out.println("before language computed: "+ this.getLngLang());
+    	if (this.getLngLang()== null)
+    	{
+    		ISO639_LANGUAGE_CODE lang= LanguageDetector.detectLanguage(strInput);
+    		switch (lang) {
+			case ENG:
+				this.setLngLang(TT_LANGUAGES.EN);
+				break;
+			case FRE_FRA:
+				this.setLngLang(TT_LANGUAGES.FR);
+				break;
+			case GER_DEU:
+				this.setLngLang(TT_LANGUAGES.DE);
+				break;
+			case ITA:
+				this.setLngLang(TT_LANGUAGES.IT);
+				break;
+			default:
+				break;
+			}
+    		System.out.println("language computed: "+ this.getLngLang());
+    		
+    		this.resetAbbreviations(this.getLngLang());
+    	}
+    	System.out.println("language normal: "+ this.getLngLang());
     	this.setClitics(this.getLngLang());
-//    	this.readAbbreviations(this.getAbbreviationFile(this.getAbbreviationFolder(), this.getLngLang()));
 
         //insert missing blanks after punctuation
         strInput = strInput.replaceAll("\\.\\.\\."," ... ");

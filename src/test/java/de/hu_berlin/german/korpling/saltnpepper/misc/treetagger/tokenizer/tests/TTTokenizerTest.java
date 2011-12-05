@@ -126,7 +126,7 @@ public class TTTokenizerTest extends TestCase
 		expectedToken.add(new Token("Oktober", 327, 334));
 		expectedToken.add(new Token(".", 334, 335));
 		
-		this.getFixture().setLngLang(TT_LANGUAGES.de);
+		this.getFixture().setLngLang(TT_LANGUAGES.DE);
 		List<Token> retTokens= this.getFixture().tokenizeToToken(text);
 		assertEquals(expectedToken.size(), retTokens.size());
 		for (int i= 0; i< expectedToken.size(); i++)
@@ -204,7 +204,7 @@ public class TTTokenizerTest extends TestCase
 		expectedToken.add("Oktober");
 		expectedToken.add(".");
 		
-		this.getFixture().setLngLang(TT_LANGUAGES.de);
+		this.getFixture().setLngLang(TT_LANGUAGES.DE);
 		List<String> retTokens= this.getFixture().tokenizeToString(text);
 		assertEquals(expectedToken.size(), retTokens.size());
 		for (int i= 0; i< expectedToken.size(); i++)
@@ -226,7 +226,7 @@ public class TTTokenizerTest extends TestCase
 		expectedToken= new Vector<Token>();
 		expectedToken.add(new Token("Die", 0, 3));
 		expectedToken.add(new Token("�lpest", 4, 10));
-		this.getFixture().setLngLang(TT_LANGUAGES.de);
+		this.getFixture().setLngLang(TT_LANGUAGES.DE);
 		retTokens= this.getFixture().tokenizeToToken(text);
 		
 		assertEquals(expectedToken.size(), retTokens.size());
@@ -248,7 +248,7 @@ public class TTTokenizerTest extends TestCase
 		
 		expectedToken= new Vector<Token>();
 		expectedToken.add(new Token("Feigenblatt", 0, 11));
-		this.getFixture().setLngLang(TT_LANGUAGES.de);
+		this.getFixture().setLngLang(TT_LANGUAGES.DE);
 		retTokens= this.getFixture().tokenizeToToken(text);
 		
 		assertEquals(expectedToken.size(), retTokens.size());
@@ -271,7 +271,7 @@ public class TTTokenizerTest extends TestCase
 		expectedToken= new Vector<Token>();
 		expectedToken.add(new Token("Die", 0, 3));
 		expectedToken.add(new Token("�lpest", 4, 10));
-		this.getFixture().setLngLang(TT_LANGUAGES.de);
+		this.getFixture().setLngLang(TT_LANGUAGES.DE);
 		retTokens= this.getFixture().tokenizeToToken(text);
 		assertEquals(expectedToken.size(), retTokens.size());
 		for (int i= 0; i< expectedToken.size(); i++)
@@ -282,7 +282,7 @@ public class TTTokenizerTest extends TestCase
 		expectedToken= new Vector<Token>();
 		expectedToken.add(new Token("Die", 0, 3));
 		expectedToken.add(new Token("�lpest", 4, 10));
-		this.getFixture().setLngLang(TT_LANGUAGES.de);
+		this.getFixture().setLngLang(TT_LANGUAGES.DE);
 		retTokens= this.getFixture().tokenizeToToken(text);
 		assertEquals(expectedToken.size(), retTokens.size());
 		for (int i= 0; i< expectedToken.size(); i++)
@@ -308,7 +308,7 @@ public class TTTokenizerTest extends TestCase
 		expectedToken.add(new Token("obvious", 22, 29));
 		expectedToken.add(new Token(".", 29, 30));
 		
-		this.getFixture().setLngLang(TT_LANGUAGES.en);
+		this.getFixture().setLngLang(TT_LANGUAGES.EN);
 		List<Token> retTokens= this.getFixture().tokenizeToToken(text);
 		System.out.println("retTokens: "+ retTokens);
 		
