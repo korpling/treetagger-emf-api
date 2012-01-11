@@ -520,45 +520,43 @@ public class TabResource extends ResourceImpl
 	 * auxilliary method for processing input file 
 	 */
 	private void addDataRow(String row) {
-		if (row!="") {
-			if (this.currentDocument==null) {
-				this.beginDocument(null);
-			}
-			String[] tuple = row.split(separator);
-			Token token= TreetaggerFactory.eINSTANCE.createToken();
-			this.currentDocument.getTokens().add(token);
-			token.setText(tuple[0]);
-			for (int i=0;i<this.openSpans.size();i++) {
-				Span span = openSpans.get(i);
-				token.getSpans().add(span);
-				span.getTokens().add(token);
-			}
-			
-			if (tuple.length>this.columnMap.size()+1) {
-				this.dataRowsWithTooMuchColumns.add(this.fileLineCount);
-			}
-			else if (tuple.length<=this.columnMap.size()) {
-				this.dataRowsWithTooLessColumns.add(this.fileLineCount);
-			}
+		if (this.currentDocument==null) {
+			this.beginDocument(null);
+		}
+		String[] tuple = row.split(separator);
+		Token token= TreetaggerFactory.eINSTANCE.createToken();
+		this.currentDocument.getTokens().add(token);
+		token.setText(tuple[0]);
+		for (int i=0;i<this.openSpans.size();i++) {
+			Span span = openSpans.get(i);
+			token.getSpans().add(span);
+			span.getTokens().add(token);
+		}
+		
+		if (tuple.length>this.columnMap.size()+1) {
+			this.dataRowsWithTooMuchColumns.add(this.fileLineCount);
+		}
+		else if (tuple.length<=this.columnMap.size()) {
+			this.dataRowsWithTooLessColumns.add(this.fileLineCount);
+		}
 
-			for (int index=1; index<Math.min(this.columnMap.size()+1,tuple.length); index++) {
-				Annotation anno = null;
-				String columnName = this.columnMap.get(index);
-				if (columnName.equalsIgnoreCase(this.POSName)) {
-					anno = TreetaggerFactory.eINSTANCE.createPOSAnnotation();
-					token.setPosAnnotation((POSAnnotation)anno);
-				} 
-				else if (columnName.equalsIgnoreCase(this.LemmaName)) {
-					anno = TreetaggerFactory.eINSTANCE.createLemmaAnnotation();
-					token.setLemmaAnnotation((LemmaAnnotation)anno);					
-				}
-				else {
-					anno = TreetaggerFactory.eINSTANCE.createAnyAnnotation();
-					anno.setName(columnName); 
-					token.getAnnotations().add(anno);
-				}
-				anno.setValue(tuple[index]);
+		for (int index=1; index<Math.min(this.columnMap.size()+1,tuple.length); index++) {
+			Annotation anno = null;
+			String columnName = this.columnMap.get(index);
+			if (columnName.equalsIgnoreCase(this.POSName)) {
+				anno = TreetaggerFactory.eINSTANCE.createPOSAnnotation();
+				token.setPosAnnotation((POSAnnotation)anno);
+			} 
+			else if (columnName.equalsIgnoreCase(this.LemmaName)) {
+				anno = TreetaggerFactory.eINSTANCE.createLemmaAnnotation();
+				token.setLemmaAnnotation((LemmaAnnotation)anno);					
 			}
+			else {
+				anno = TreetaggerFactory.eINSTANCE.createAnyAnnotation();
+				anno.setName(columnName); 
+				token.getAnnotations().add(anno);
+			}
+			anno.setValue(tuple[index]);
 		}
 	}
 	
@@ -568,6 +566,7 @@ public class TabResource extends ResourceImpl
 	private void setDocumentNames() {
 		String documentBaseName = this.getURI().lastSegment().split("[.]")[0];
 		int documentCount = this.getContents().size();
+	
 		switch (documentCount) {
 			case 0: 
 				logWarning(String.format("no valid document data contained in file '%s'",this.getURI().toFileString())); 
@@ -706,38 +705,39 @@ public class TabResource extends ResourceImpl
 		String line = null;
 		this.fileLineCount = 0;
 		while((line = fileReader.readLine()) != null) {
+			if (line.trim().length()>0) {
+				//delete BOM if exists
+				if ((this.fileLineCount==0)&&(line.startsWith(utf8BOM.toString()))) {
+					line = line.substring(utf8BOM.toString().length());
+					logInfo("BOM recognised and ignored");
+				}
 
-			//delete BOM if exists
-			if ((this.fileLineCount==0)&&(line.startsWith(utf8BOM.toString()))) {
-				line = line.substring(utf8BOM.toString().length());
-				logInfo("BOM recognised and ignored");
-			}
-
-			this.fileLineCount++;
-			if (XMLUtils.isProcessingInstructionTag(line)) {
-				//do nothing; ignore processing instructions
-			}
-			else if (XMLUtils.isStartTag(line)) {
-				String startTagName = XMLUtils.getName(line);
-				if (startTagName.equalsIgnoreCase(metaTag)) {
-					this.beginDocument(line);
+				this.fileLineCount++;
+				if (XMLUtils.isProcessingInstructionTag(line)) {
+					//do nothing; ignore processing instructions
+				}
+				else if (XMLUtils.isStartTag(line)) {
+					String startTagName = XMLUtils.getName(line);
+					if (startTagName.equalsIgnoreCase(metaTag)) {
+						this.beginDocument(line);
+					}
+					else {
+						this.beginSpan(startTagName, line);
+					}
+				} 
+				else if (XMLUtils.isEndTag(line)) {
+					String endTagName = XMLUtils.getName(line);
+					if (endTagName.equalsIgnoreCase(metaTag)) {
+						this.xmlDocumentOpen = false;
+						this.endDocument();
+					}
+					else {
+						this.endSpan(endTagName);
+					}
 				}
 				else {
-					this.beginSpan(startTagName, line);
+					this.addDataRow(line);
 				}
-			} 
-			else if (XMLUtils.isEndTag(line)) {
-				String endTagName = XMLUtils.getName(line);
-				if (endTagName.equalsIgnoreCase(metaTag)) {
-					this.xmlDocumentOpen = false;
-					this.endDocument();
-				}
-				else {
-					this.endSpan(endTagName);
-				}
-			}
-			else {
-				this.addDataRow(line);
 			}
 		}
 		this.endDocument();
