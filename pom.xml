@@ -5,41 +5,22 @@
   <artifactId>misc-TreetaggerModel</artifactId>
   <version>1.2.1-SNAPSHOT</version>
   <packaging>bundle</packaging>
-  <description>Provides the Model for Treetagger data used in TreetaggerModules and a Tokenizer that is also used by RSTModules</description>
-  
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
       <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
     </license>
   </licenses>
-
-  <dependencies>
-  	<!-- start: language detector -->
-  	<!-- mvn install:install-file -Dfile=lib/textcat-1.0.1.jar -DgroupId=org.knallgrau -DartifactId=textcat -Dversion=1.0.1 -Dpackaging=jar -->
-  	<dependency>
-  		<groupId>org.knallgrau</groupId>
-  		<artifactId>textcat</artifactId>
-  		<version>1.0.1</version>
-  		<type>jar</type>
-  	</dependency>
-  </dependencies>  	
-
-  <repositories>
-    <repository>
-      <id>korpling</id>
-      <name>korpling maven repo</name>
-      <url>http://korpling.german.hu-berlin.de/maven2</url>
-    </repository>
-  </repositories>
-  <parent>
-    <groupId>de.hu_berlin.german.korpling.saltnpepper</groupId>
-    <artifactId>pepper-parentModule</artifactId>
-    <version>1.1.3</version>
-  </parent>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <component.descriptor.name>serviceComponents.xml</component.descriptor.name>
+    <bundle.file>${project.groupId}.${project.artifactId}_${project.version}.jar</bundle.file>
+    <assemblies.name>src/assemble/assemblies.xml</assemblies.name>
+    <license.file>${basedir}/LICENSE</license.file>
+    <notice.file>${basedir}/NOTICE</notice.file>
+  </properties>
   <scm>
     <developerConnection>scm:svn:https://korpling.german.hu-berlin.de/svn/saltnpepper/Misc/TreetaggerModel/trunk</developerConnection>
-    
   </scm>
   <distributionManagement>
     <repository>
@@ -49,6 +30,64 @@
       <!-- <url>scpexe://korpling.german.hu-berlin.de/srv/www/maven2/</url>-->
     </repository>
   </distributionManagement>
+  <repositories>
+    <repository>
+      <id>korpling</id>
+      <name>korpling maven repo</name>
+      <url>http://korpling.german.hu-berlin.de/maven2</url>
+    </repository>
+  </repositories>
+  <dependencies>
+  	<!-- start: language detector -->
+  	<!-- mvn install:install-file -Dfile=lib/textcat-1.0.1.jar -DgroupId=org.knallgrau -DartifactId=textcat -Dversion=1.0.1 -Dpackaging=jar -->
+  	<dependency>
+  		<groupId>org.knallgrau</groupId>
+  		<artifactId>textcat</artifactId>
+  		<version>1.0.1</version>
+  		<type>jar</type>
+  	</dependency>
+  	<!-- end: language detector -->
+    <dependency>
+      <groupId>org.apache.felix</groupId>
+      <artifactId>org.osgi.core</artifactId>
+      <version>1.4.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.felix</groupId>
+      <artifactId>org.osgi.compendium</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.16</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.emf</groupId>
+      <artifactId>org.eclipse.emf.common</artifactId>
+      <version>2.6.0.v20100614-1136</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.emf</groupId>
+      <artifactId>org.eclipse.emf.ecore</artifactId>
+      <version>2.6.0.v20100614-1136</version>
+      <type>jar</type>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.emf</groupId>
+      <artifactId>org.eclipse.emf.ecore.xmi</artifactId>
+      <version>2.5.0.v20100521-1846</version>
+      <type>jar</type>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
   <build>
     <plugins>
        <!-- start: Plugin for automatic releasing -->
@@ -97,4 +136,3 @@
     </plugins>
   </build>
 </project>
-
