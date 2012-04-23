@@ -97,7 +97,7 @@
         <configuration>
           <tagBase>
 
-           https://korpling.german.hu-berlin.de/svn/saltnpepper/PepperModules/SaltXMLModules/tags/
+           https://korpling.german.hu-berlin.de/svn/saltnpepper/misc/TreetaggerModel/tags/
 
           </tagBase>
           <releaseProfiles>release</releaseProfiles>
