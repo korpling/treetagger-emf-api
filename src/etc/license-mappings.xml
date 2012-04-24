@@ -4,6 +4,6 @@
         <groupId>org.knallgrau</groupId>
         <artifactId>textcat</artifactId>
         <version>1.0.1</version>
-        <license>LGPL license</license>
+		<license>LGPL</license>
     </artifact>
 </license-lookup>
