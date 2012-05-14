@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Vector;
 
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.tokenizer.TTTokenizer;
-import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.tokenizer.TTTokenizer.TTLanguages;
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.tokenizer.TTTokenizer.TT_LANGUAGES;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.tokenizer.Token;
 
 import junit.framework.TestCase;
@@ -54,8 +54,10 @@ public class TTTokenizerTest extends TestCase
 	public void setUp()
 	{
 		this.setFixture(new TTTokenizer());
-		this.getFixture().setAbbriviationFolder(new File("./src/main/resources/abbreviations/"));
+//		this.getFixture().setAbbriviationFolder(new File("./src/main/resources/abbreviations/"));
 	}
+	
+	//TODO test the detection of abbreviations, by 1) giving a specific file, 2) giving a folder (giving a language and not) and 3) using default abbrevs 
 	
 	/**
 	 * checks the following text via TokenizeToToken:
@@ -124,7 +126,7 @@ public class TTTokenizerTest extends TestCase
 		expectedToken.add(new Token("Oktober", 327, 334));
 		expectedToken.add(new Token(".", 334, 335));
 		
-		this.getFixture().setLngLang(TTLanguages.de);
+		this.getFixture().setLngLang(TT_LANGUAGES.DE);
 		List<Token> retTokens= this.getFixture().tokenizeToToken(text);
 		assertEquals(expectedToken.size(), retTokens.size());
 		for (int i= 0; i< expectedToken.size(); i++)
@@ -132,6 +134,8 @@ public class TTTokenizerTest extends TestCase
 			assertEquals(expectedToken.get(i), retTokens.get(i));
 		}
 	}
+	
+	
 	
 	/**
 	 * checks the following text via TokenizeToText:
@@ -200,7 +204,7 @@ public class TTTokenizerTest extends TestCase
 		expectedToken.add("Oktober");
 		expectedToken.add(".");
 		
-		this.getFixture().setLngLang(TTLanguages.de);
+		this.getFixture().setLngLang(TT_LANGUAGES.DE);
 		List<String> retTokens= this.getFixture().tokenizeToString(text);
 		assertEquals(expectedToken.size(), retTokens.size());
 		for (int i= 0; i< expectedToken.size(); i++)
@@ -222,7 +226,7 @@ public class TTTokenizerTest extends TestCase
 		expectedToken= new Vector<Token>();
 		expectedToken.add(new Token("Die", 0, 3));
 		expectedToken.add(new Token("�lpest", 4, 10));
-		this.getFixture().setLngLang(TTLanguages.de);
+		this.getFixture().setLngLang(TT_LANGUAGES.DE);
 		retTokens= this.getFixture().tokenizeToToken(text);
 		
 		assertEquals(expectedToken.size(), retTokens.size());
@@ -244,7 +248,7 @@ public class TTTokenizerTest extends TestCase
 		
 		expectedToken= new Vector<Token>();
 		expectedToken.add(new Token("Feigenblatt", 0, 11));
-		this.getFixture().setLngLang(TTLanguages.de);
+		this.getFixture().setLngLang(TT_LANGUAGES.DE);
 		retTokens= this.getFixture().tokenizeToToken(text);
 		
 		assertEquals(expectedToken.size(), retTokens.size());
@@ -267,7 +271,7 @@ public class TTTokenizerTest extends TestCase
 		expectedToken= new Vector<Token>();
 		expectedToken.add(new Token("Die", 0, 3));
 		expectedToken.add(new Token("�lpest", 4, 10));
-		this.getFixture().setLngLang(TTLanguages.de);
+		this.getFixture().setLngLang(TT_LANGUAGES.DE);
 		retTokens= this.getFixture().tokenizeToToken(text);
 		assertEquals(expectedToken.size(), retTokens.size());
 		for (int i= 0; i< expectedToken.size(); i++)
@@ -278,8 +282,36 @@ public class TTTokenizerTest extends TestCase
 		expectedToken= new Vector<Token>();
 		expectedToken.add(new Token("Die", 0, 3));
 		expectedToken.add(new Token("�lpest", 4, 10));
-		this.getFixture().setLngLang(TTLanguages.de);
+		this.getFixture().setLngLang(TT_LANGUAGES.DE);
 		retTokens= this.getFixture().tokenizeToToken(text);
+		assertEquals(expectedToken.size(), retTokens.size());
+		for (int i= 0; i< expectedToken.size(); i++)
+		{
+			assertEquals(expectedToken.get(i), retTokens.get(i));
+		}
+	}
+	
+	/**
+	 * checks the following text via TokenizeToToken:
+	 * "O.K., so the answer's obvious."
+	 */
+	public void testCase7()
+	{
+		String text= "O.K., so the answer's obvious.";
+		List<Token> expectedToken= new Vector<Token>();
+		expectedToken.add(new Token("O.K.", 0, 4));
+                expectedToken.add(new Token(",", 4, 5));
+		expectedToken.add(new Token("so", 6, 8));
+		expectedToken.add(new Token("the", 9, 12));
+		expectedToken.add(new Token("answer", 13, 19));
+		expectedToken.add(new Token("'s", 19, 21));
+		expectedToken.add(new Token("obvious", 22, 29));
+		expectedToken.add(new Token(".", 29, 30));
+		
+		this.getFixture().setLngLang(TT_LANGUAGES.EN);
+		List<Token> retTokens= this.getFixture().tokenizeToToken(text);
+		System.out.println("retTokens: "+ retTokens);
+		
 		assertEquals(expectedToken.size(), retTokens.size());
 		for (int i= 0; i< expectedToken.size(); i++)
 		{

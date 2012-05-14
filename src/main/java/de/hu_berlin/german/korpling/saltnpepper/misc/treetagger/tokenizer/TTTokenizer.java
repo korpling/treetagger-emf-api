@@ -24,29 +24,38 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Hashtable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.exceptions.TTTokenizerException;
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.language.ISO639_LANGUAGE_CODE;
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.language.LanguageDetector;
 
 
 /**
  * The general task of this class is to tokenize a given text in the same order as the tool TreeTagger will do. 
- * A list of tokenized text is returned with the text anchor (start and end position) in original text.  
+ * A list of tokenized text is returned with the text anchor (start and end position) in original text.
+ * Reimplemented in Java with permission from the original TreeTagger tokenizer in Perl by Helmut Schmid 
+ * (see http://www.ims.uni-stuttgart.de/projekte/corplex/TreeTagger/). 
+ * This implementation uses sets of abbreviations to detect tokens, which are abbreviations in a specific language.
+ * Therefore you can set a file containing abbreviations, to take others than the default ones. Because of 
+ * abbreviations are language dependend, you can set a language, to use only a specific set of abbreviations.
+ * The current version of the {@link TTTokenizer} supports abbreviations for english, french, italian and german language.
+ * If no language is set, all available abbreviations will be used.    
  *  
- * @author ling_az
+ * @author Amir Zeldes
+ * @author Florian Zipser
  *
  */
 public class TTTokenizer 
 {
-    public enum TTLanguages {de,en,fr,it};
+    public enum TT_LANGUAGES {DE,EN,FR,IT};
    
-   
-
 	/**
      * Initializes a new TTokenizer object.
      */
@@ -68,30 +77,53 @@ public class TTTokenizer
 
     /**
      * Initializes a new TTokenizer object.
+     * @param lngLang
+     * @throws UnsupportedEncodingException
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public TTTokenizer(TT_LANGUAGES lngLang) 
+    {
+        this.setLngLang(lngLang);
+    	setClitics(lngLang);
+    }
+    
+    /**
+     * Initializes a new TTokenizer object.
      * @param flAbbreviations
      * @param lngLang
      * @throws UnsupportedEncodingException
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public TTTokenizer(File flAbbreviations, TTLanguages lngLang) 
+    public TTTokenizer(File flAbbreviations, TT_LANGUAGES lngLang) 
     {
         this.setLngLang(lngLang);
     	setClitics(lngLang);
         readAbbreviations(flAbbreviations);
     }
     
+    /**
+     * Resets this object, to have a fresh and empty object like creating a new one.
+     */
+    public void reset()
+    {
+    	this.abbreviationFile= null;
+    	this.abbreviationFolder= null;
+    	this.lngLang= null;
+    	this.currentAbbreviations= null;
+    }
+    
 //=============================== start: language    
     /**
      * the language of the text to be tokenized
      */
-    private TTLanguages lngLang = TTLanguages.de;
-    
+    private TT_LANGUAGES lngLang = null;
     /**
      * Sets the language of the text which shall be tokenized.
 	 * @param lngLang the lngLang to set
 	 */
-	public void setLngLang(TTLanguages lngLang) {
+	public void setLngLang(TT_LANGUAGES lngLang) {
 		this.lngLang = lngLang;
 	}
 
@@ -99,44 +131,174 @@ public class TTTokenizer
 	 * returns the set language of the text which shall be tokenized.
 	 * @return the lngLang
 	 */
-	public TTLanguages getLngLang() {
+	public TT_LANGUAGES getLngLang() {
 		return lngLang;
 	}
 //=============================== end: language
 //=============================== start: abbreviation folder
+	public static final String FILE_ABBR_IT= "italian-abbreviations";
+	public static final String FILE_ABBR_DE= "german-abbreviations";
+	public static final String FILE_ABBR_FR= "french-abbreviations";
+	public static final String FILE_ABBR_EN= "english-abbreviations";
+	
 	/**
 	 * Folder where the abbreviation files can be found.
 	 */
-	private File abbriviationFolder= null;
+	private File abbreviationFolder= null;
 	
 	/**
 	 * Sets the folder where the abbreviation files can be found.
 	 * @param abbriviationFolder the abbriviationFolder to set
 	 */
-	public void setAbbriviationFolder(File abbriviationFolder) {
-		this.abbriviationFolder = abbriviationFolder;
+	public void setAbbreviationFolder(File abbreviationFolder) {
+		this.abbreviationFolder = abbreviationFolder;
 	}
 
 	/**
 	 * Returns the set folder where the abbreviation files can be found.
 	 * @return the abbriviationFolder
 	 */
-	public File getAbbriviationFolder() {
-		return abbriviationFolder;
+	public File getAbbreviationFolder() {
+		return abbreviationFolder;
 	}
 //=============================== end: abbreviation folder	
-//=============================== start: abbreviation
-	private Hashtable<String, Boolean> hashAbbreviations = null;
-	    
-	public Hashtable<String, Boolean> getHashAbbreviations() {
-		return hashAbbreviations;
+//=============================== start: abbreviation file
+	/**
+	 * File where the abbreviation files can be found.
+	 */
+	private File abbreviationFile= null;
+	
+	/**
+	 * Sets the file where the abbreviation files can be found.
+	 * @param abbriviationFile the abbriviationFile to set
+	 */
+	public void setAbbreviationFile(File abbreviationFile) {
+		this.abbreviationFile = abbreviationFile;
 	}
 
-	public void setHashAbbreviations(Hashtable<String, Boolean> hashAbbreviations) {
-		this.hashAbbreviations = hashAbbreviations;
+	/**
+	 * Returns the set file where the abbreviation files can be found.
+	 * @return the abbriviationFile
+	 */
+	public File getAbbreviationFile() {
+		return abbreviationFile;
 	}
-//=============================== end: abbreviation
-		
+//=============================== end: abbreviation folder		
+//=============================== start: abbreviation
+	/**
+	 * abbreviations currently being used
+	 */
+	private HashSet<String> currentAbbreviations = null;
+	
+	/**
+	 * Calls {@link #getAbbreviations(TT_LANGUAGES)} with currently set language.
+	 * @return
+	 */
+	public HashSet<String> getAbbreviations()
+	{
+		return(this.getAbbreviations(this.getLngLang()));
+	}
+	
+	/**
+	 * Resets the table of abbreviations for instance, when the language has changed.
+	 * @param language
+	 * @return
+	 */
+	private HashSet<String> resetAbbreviations(TT_LANGUAGES language)
+	{
+		HashSet<String> retVal= null;
+		if (this.getAbbreviationFile()!= null)
+		{
+			retVal= this.readAbbreviations(this.getAbbreviationFile());
+		}
+		else if (this.getAbbreviationFolder()!= null)
+		{
+			File abbrFile= null;
+			if (language!= null)
+			{
+				switch (language) {
+				case DE:
+					abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_DE);
+					retVal= this.readAbbreviations(abbrFile);
+					break;
+				case EN:
+					abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_EN);
+					retVal= this.readAbbreviations(abbrFile);
+					break;
+				case FR:
+					abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_FR);
+					retVal= this.readAbbreviations(abbrFile);
+					break;
+				case IT:
+					abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_IT);
+					retVal= this.readAbbreviations(abbrFile);
+					break;
+				}
+			}
+			else
+			{
+				abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_DE);
+				retVal= this.readAbbreviations(abbrFile);
+				abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_EN);
+				retVal.addAll(this.readAbbreviations(abbrFile));
+				abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_FR);
+				retVal.addAll(this.readAbbreviations(abbrFile));
+				abbrFile= new File(this.getAbbreviationFolder().getAbsolutePath()+"/"+FILE_ABBR_IT);
+				retVal.addAll(this.readAbbreviations(abbrFile));
+			}
+		}
+		else
+		{
+			if (language!= null)
+			{
+				switch (language) {
+				case DE:
+					retVal= AbbreviationDE.createAbbriviations();
+					break;
+				case EN:
+					retVal= AbbreviationEN.createAbbriviations();
+					break;
+				case FR:
+					retVal= AbbreviationFR.createAbbriviations();
+					break;
+				case IT:
+					retVal= AbbreviationIT.createAbbriviations();
+					break;
+				}
+			}
+			else 
+			{
+				retVal= AbbreviationDE.createAbbriviations();
+				retVal.addAll(AbbreviationEN.createAbbriviations());
+				retVal.addAll(AbbreviationFR.createAbbriviations());
+				retVal.addAll(AbbreviationIT.createAbbriviations());
+			}
+		}
+		return(retVal);
+	}
+	
+	/**
+	 * Returns a set of available abbreviations concerning the given language. If no language is given, all available
+	 * abbreviations will be returned. The order of searching for abbreviations is the following:
+	 * <ol>
+	 * 	<li>Check if an abbreviation file is set, if true, use this one.</li>
+	 * 	<li>Check if an abbreviation folder is set, if true, detect available languages in folder and take them.</li>
+	 * 	<li>If no files or folders set, take the default abbreviation set given by {@link AbbreviationDE}, {@link AbbreviationEN}, {@link AbbreviationFR} and {@link AbbreviationIT}.</li>
+	 * </ol>
+	 */
+	public HashSet<String> getAbbreviations(TT_LANGUAGES language)
+	{
+		HashSet<String> retVal= null;
+		if (currentAbbreviations!= null)
+			retVal= currentAbbreviations;
+		else
+		{//abbreviations aren't set yet
+			this.currentAbbreviations= resetAbbreviations(language);
+			retVal= this.currentAbbreviations; 
+		}//abbreviations aren't set yet
+		return(retVal);
+	}
+	
     /**
      * Reads the abbreviation from given file. 
      * @param flAbbreviations
@@ -144,12 +306,13 @@ public class TTTokenizer
      * @throws FileNotFoundException
      * @throws IOException
      */
-    private void readAbbreviations(File flAbbreviations)
+    private HashSet<String> readAbbreviations(File flAbbreviations)
     {
+    	HashSet<String> abbreviations= null;
     	try 
     	{
-    		this.setHashAbbreviations(new Hashtable<String, Boolean>());
-            
+    		abbreviations= new HashSet<String>();
+    		
     		BufferedReader inReader;
 		
 			inReader = new BufferedReader(new InputStreamReader(new FileInputStream(flAbbreviations), "UTF8"));
@@ -159,7 +322,7 @@ public class TTTokenizer
 			while((input = inReader.readLine()) != null)
 			{
 	           //putting
-	           hashAbbreviations.put(input, true);
+	           abbreviations.add(input);
 			}
 			inReader.close();
 			
@@ -170,42 +333,14 @@ public class TTTokenizer
 		{
 			throw new TTTokenizerException("Cannot tokenize the given text, because can not read file '"+flAbbreviations.getAbsolutePath()+"'.");
 		}
-		
-    }
-    
-    private static Hashtable<TTLanguages, File> languageAbbreviationFileTable= null;
-    {
-    	languageAbbreviationFileTable= new Hashtable<TTTokenizer.TTLanguages, File>();
-    	languageAbbreviationFileTable.put(TTLanguages.it, new File("italian-abbreviations"));
-    	languageAbbreviationFileTable.put(TTLanguages.de, new File("german-abbreviations"));
-    	languageAbbreviationFileTable.put(TTLanguages.fr, new File("french-abbreviations"));
-    	languageAbbreviationFileTable.put(TTLanguages.en, new File("english-abbreviations"));
-    }
-    
-    /**
-     * Returns an abbreviation file generated out of the given abbreviation folder and the given language.
-     * @param abbreviationFolder
-     * @param language
-     * @return file of matching abbreviation
-     */
-    private File getAbbreviationFile(File abbreviationFolder, TTLanguages language)
-    {
-    	File abbreviationFile= null;
-    	if (language== null)
-    		throw new TTTokenizerException("Cannot start tokenization, no language is set so far.");
-    	
-    	if (abbreviationFolder== null)
-    		throw new TTTokenizerException("Cannot start tokenization, no folder containing the abbreviation is set so far.");
-    	
-    	abbreviationFile= new File(this.getAbbriviationFolder().getAbsolutePath()+"/"+languageAbbreviationFileTable.get(language));
-    	return(abbreviationFile);
+		return(abbreviations);
     }
 
 //======================= start: important issues
  // characters which have to be cut off at the beginning of a word
-    private final static String PChar = "\\[\\{\\(´`\"»«‚„†‡‹‘’“”•–—›";
+    protected final static String P_CHAR = "\\[\\{\\(´`\"»«‚„†‡‹‘’“”•–—›";
     // characters which have to be cut off at the end of a word
-    private final static String FChar = "\\]\\}'`\"\\),;:!\\?%»«‚„…†‡‰‹‘’“”•–—›";
+    protected final static String F_CHAR = "\\]\\}'`\"\\),;:!\\?%»«‚„…†‡‰‹‘’“”•–—›";
 
     // character sequences which have to be cut off at the beginning of a word
     private String PClitic="";
@@ -216,20 +351,23 @@ public class TTTokenizer
      * Sets clitics corresponding to the given language.
      * @param lngLang language
      */
-    private void setClitics(TTLanguages lngLang)
+    private void setClitics(TT_LANGUAGES lngLang)
     {
         if (this.getLngLang()!=null)
         {
             this.setLngLang(lngLang);
             switch (lngLang){
-                case en:
+                case EN:
                     this.FClitic = "('(s|re|ve|d|m|em|ll)|n't)";
-                case fr:
+                    break;
+                case FR:
                     this.PClitic = "([dcjlmnstDCJLNMST]'|[Qq]u'|[Jj]usqu'|[Ll]orsqu')";
                     this.FClitic = "(-t-elles?|-t-ils?|-t-on|-ce|-elles?|-ils?|-je|-la|-les?|-leur|-lui|-mêmes?|-m'|-moi|-nous|-on|-toi|-tu|-t'|-vous|-en|-y|-ci|-là)";
-                case it:
+                    break;
+                case IT:
                     this.PClitic = "([dD][ae]ll'|[nN]ell'|[Aa]ll'|[lLDd]'|[Ss]ull'|[Qq]uest'|[Uu]n'|[Ss]enz'|[Tt]utt')";
-                case de: //do nothing
+                    break;
+                case DE: //do nothing
 
             }
         }
@@ -244,16 +382,7 @@ public class TTTokenizer
     public List<Token> tokenizeToToken(String strInput) 
     {
     	List<Token> retVal= null;
-    	
-    	if (this.getLngLang()== null)
-    		throw new TTTokenizerException("Cannot start tokenization, no language is set so far.");
-    	
-    	if (this.abbriviationFolder== null)
-    		throw new TTTokenizerException("Cannot start tokenization, no folder containing the abbreviation is set so far.");
-    	
-    	this.setClitics(this.getLngLang());
-    	this.readAbbreviations(this.getAbbreviationFile(this.getAbbriviationFolder(), this.getLngLang()));
-    	
+   	
     	List<String> strTokens = null;
     	strTokens= this.tokenizeToString(strInput);
     	if (	(strTokens!= null)&&
@@ -299,14 +428,34 @@ public class TTTokenizer
      */
     public List<String> tokenizeToString(String strInput) 
     {
+    	if (	(strInput== null)||
+    			(strInput.isEmpty()))
+    		return(null);
     	if (this.getLngLang()== null)
-    		throw new TTTokenizerException("Cannot start tokenization, no language is set so far.");
-    	
-    	if (this.abbriviationFolder== null)
-    		throw new TTTokenizerException("Cannot start tokenization, no folder containing the abbreviation is set so far.");
-    	
+    	{
+    		ISO639_LANGUAGE_CODE lang= LanguageDetector.detectLanguage(strInput);
+    		if (lang!= null)
+    		{
+	    		switch (lang) {
+				case ENG:
+					this.setLngLang(TT_LANGUAGES.EN);
+					break;
+				case FRE_FRA:
+					this.setLngLang(TT_LANGUAGES.FR);
+					break;
+				case GER_DEU:
+					this.setLngLang(TT_LANGUAGES.DE);
+					break;
+				case ITA:
+					this.setLngLang(TT_LANGUAGES.IT);
+					break;
+				default:
+					break;
+				}
+	    		this.resetAbbreviations(this.getLngLang());
+    		}
+    	}
     	this.setClitics(this.getLngLang());
-    	this.readAbbreviations(this.getAbbreviationFile(this.getAbbriviationFolder(), this.getLngLang()));
 
         //insert missing blanks after punctuation
         strInput = strInput.replaceAll("\\.\\.\\."," ... ");
@@ -322,102 +471,107 @@ public class TTTokenizer
         //split based on whitespace
         strOutput = strInput.split(" ");
 
-        List<String> lstTokens = new Vector<String>(Arrays.asList(strOutput));
+        ArrayList<String> lstTokens = new ArrayList<String>(Arrays.asList(strOutput));
+        Pattern p = null;
+        Matcher m = null;
+        Pattern p2 = null;
+        Matcher m2 = null;
         
            for (int i=0; i < lstTokens.size();i++)
            {
-               if (hashAbbreviations.containsKey(lstTokens.get(i)))
+               
+               //cut off preceding punctuation 
+               p = Pattern.compile("^([" + P_CHAR + "])(.+)");
+               m = p.matcher(lstTokens.get(i));
+               if (m.find())
+               {
+                  lstTokens.remove(i);
+                  lstTokens.add(i, m.group(2));
+                  lstTokens.add(i, m.group(1));
+                  continue; //advance further in the loop, checking the token without preceding punctuation
+               }               
+               
+               //cut off trailing punctuation 
+               p = Pattern.compile("^(.+)([" + F_CHAR + "])$");
+               m = p.matcher(lstTokens.get(i));
+               if (m.find())
+               {
+                  lstTokens.remove(i);
+                  lstTokens.add(i, m.group(2));
+                  lstTokens.add(i, m.group(1));
+                  i--; //do not advance, the token needs to be checked without trailing punctuation
+                  continue; //repeat the loop, checking the same token without trailing punctuation
+               }
+
+               //cut off trailing periods if punctuation precedes
+               p = Pattern.compile("^(.+[" + F_CHAR + "])(\\.)$");
+               m = p.matcher(lstTokens.get(i));
+               if (m.find())
+               {
+                  lstTokens.remove(i);
+                  lstTokens.add(i, m.group(2));
+                  lstTokens.add(i, m.group(1));
+                  i--; //do not advance, the token needs to be checked without trailing period
+                  continue; //repeat the loop, checking the same token without trailing period
+               }
+
+               //check abbreviation list
+               if (this.getAbbreviations().contains(lstTokens.get(i)))
                {
                    //known abbreviation found
-                   //do nothing
+                   continue;
                }
-               else
+
+               //abbreviations of the form A. or U.S.A.
+               p = Pattern.compile("^([A-Za-zÁÂÃÈý®Ð×ÝÞÍðÎÓÔÕØÙãõš›€ß‚ƒ„‡ˆ‰Š‹ŒŽøŸ÷·”“’]\\.)+$");
+               m = p.matcher(lstTokens.get(i));
+               if (m.find())
                {
-                   //([A-Za-zÁÂÃÈý®Ð×ÝÞÍðÎÓÔÕØÙãõš›€ß‚ƒ„‡ˆ‰Š‹ŒŽøŸ÷·”“’]\\.)+
-                   //^(\\.\\.\\.|[0-9]+\\.)$
-                   Pattern p = Pattern.compile("^(..*)(\\.)$");
-                   Matcher m = p.matcher(lstTokens.get(i));
-                   Pattern p2 = Pattern.compile("^(\\.\\.\\.|[0-9]+\\.)$");
-                   Matcher m2 = p2.matcher(lstTokens.get(i));
-
-                   if (m.find() && !m2.find())
-                   {
-                      lstTokens.remove(i);
-                      lstTokens.add(i, m.group(2));
-                      lstTokens.add(i, m.group(1));
-                      i--; //period separated, this token should be repeated
-                      
-                       //Abbreviation of the sort U.S.A., a number like 0.343 or ...
-                       //(The behavior for numbers seems incorrect but reproduces the behavior of the Perl TTTokenizer)
-                       //Do nothing
-                   }
-                   else
-                   {
-                   //not an abbreviation
-                   //attempt to separate prefixes
-                   p = Pattern.compile("^([" + PChar + "])(.+)");
-                   m = p.matcher(lstTokens.get(i));
-                   if (m.find())
-                   {
-                      lstTokens.remove(i);
-                      lstTokens.add(i, m.group(2));
-                      lstTokens.add(i, m.group(1));
-                      i++; //advance one token, since we are past the prefix
-                   }
-                   //attempt to separate proclitics
-                   p = Pattern.compile("^(" + PClitic + ")(.+)");
-                   m = p.matcher(lstTokens.get(i));
-                   if (m.find() && !PClitic.equals(""))
-                   {
-                      lstTokens.remove(i);
-                      lstTokens.add(i, m.group(2));
-                      lstTokens.add(i, m.group(1));
-                      i++; //advance one token, since we are past the proclitic
-                   }
-                   //attempt to separate enclitics
-                    p = Pattern.compile("(.+)(" + FClitic + ")$");
-                    m = p.matcher(lstTokens.get(i));
-                   if (m.find() && !FClitic.equals(""))
-                   {
-                      lstTokens.remove(i);
-                      lstTokens.add(i, m.group(2));
-                      lstTokens.add(i, m.group(1));
-                      i++; //advance one token to get to the enclitic
-                   }
-
-                   //attempt to separate suffixes
-                    p = Pattern.compile("(.+)([" + FChar + "])$");
-                    m = p.matcher(lstTokens.get(i));
-                   if (m.find())
-                   {
-                      lstTokens.remove(i);
-                      lstTokens.add(i, m.group(2));
-                      lstTokens.add(i, m.group(1));
-
-                      //cut off trailing periods if punctuation precedes
-                      p = Pattern.compile("(\\.)$");
-                      m = p.matcher(lstTokens.get(i));
-                      if (m.find())
-                      {
-                          lstTokens.remove(i);
-                          lstTokens.add(i, m.group(2));
-                          lstTokens.add(i, m.group(1));
-                          i++; //advance one token to the trailing period
-                      }
-                      i--; //advance one token to get to the suffix
-                   }
+                  continue; //leave this acronym token alone and advance the loop
                }
+               
+               //disambiguate periods
+               p = Pattern.compile("^(.+)(\\.)$");
+               m = p.matcher(lstTokens.get(i));
+               p2 = Pattern.compile("^(\\.\\.\\.|[0-9]+\\.)$");
+               m2 = p2.matcher(lstTokens.get(i));
+               if (m.find() && !m2.find())
+               {
+                  lstTokens.remove(i);
+                  lstTokens.add(i, m.group(2));
+                  lstTokens.add(i, m.group(1));
+                  i++; //no need to check next token, as it is a separate period
+                  continue; //advance the loop
+               }
+
+                //attempt to separate proclitics
+                p = Pattern.compile("^(" + PClitic + ")(.+)$");
+                m = p.matcher(lstTokens.get(i));
+               if (m.find() && !PClitic.isEmpty())
+               {
+                  lstTokens.remove(i);
+                  lstTokens.add(i, m.group(2));
+                  lstTokens.add(i, m.group(1));
+                  continue; //proclitic has been removed, but next token must still be checked
+               }
+
+               //attempt to separate enclitics
+               p = Pattern.compile("(.+)(" + FClitic + ")$");
+               m = p.matcher(lstTokens.get(i));
+               if (m.find() && !FClitic.isEmpty())
+               {
+                  lstTokens.remove(i);
+                  lstTokens.add(i, m.group(2));
+                  lstTokens.add(i, m.group(1));
+                  i++; //next token is a known enclitic, skip it
+                  continue; //advance to get past the enclitic
+               }
+
+                   
+               
            }
-        }
+        
         return lstTokens;
     }
 // ======================= end: important issues
-    
-    /**
-     * @param args the command line arguments
-     */
-     public static void main(String[] args) throws UnsupportedEncodingException, FileNotFoundException, IOException 
-     {  
-    	//TODO implement a possibility to convert a textfile to a tokenized one in e.g. Treetagger-format
-     }
 }
