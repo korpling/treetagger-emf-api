@@ -183,7 +183,8 @@
             <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
             <Bundle-Name>${project.name}</Bundle-Name>
             <Bundle-Version>${project.version}</Bundle-Version>
-            <Include-Resource>{maven-resources}, LICENSE, NOTICE</Include-Resource>
+            <Bundle-ClassPath>.,{maven-dependencies}, lib/textcat-1.0.1.jar</Bundle-ClassPath>
+            <Include-Resource>{maven-resources}, LICENSE, NOTICE, lib/textcat-1.0.1.jar=textcat-1.0.1.jar</Include-Resource>
           </instructions>
         </configuration>
       </plugin>
