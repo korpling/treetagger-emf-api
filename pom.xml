@@ -45,15 +45,6 @@
   </repository>
 </repositories>
   <dependencies>
-  	<!-- start: language detector -->
-  	<!-- mvn install:install-file -Dfile=lib/textcat-1.0.1.jar -DgroupId=org.knallgrau -DartifactId=textcat -Dversion=1.0.1 -Dpackaging=jar -->
-  	<dependency>
-  		<groupId>org.knallgrau</groupId>
-  		<artifactId>textcat</artifactId>
-  		<version>1.0.1</version>
-  		<type>jar</type>
-  	</dependency>
-  	<!-- end: language detector -->
     <dependency>
       <groupId>org.apache.felix</groupId>
       <artifactId>org.osgi.core</artifactId>
@@ -179,8 +170,8 @@
             <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
             <Bundle-Name>${project.name}</Bundle-Name>
             <Bundle-Version>${project.version}</Bundle-Version>
-            <Bundle-ClassPath>.,{maven-dependencies}, lib/textcat-1.0.1.jar</Bundle-ClassPath>
-            <Include-Resource>{maven-resources}, LICENSE, NOTICE, lib/textcat-1.0.1.jar=textcat-1.0.1.jar</Include-Resource>
+            <Bundle-ClassPath>.,{maven-dependencies}</Bundle-ClassPath>
+            <Include-Resource>{maven-resources}, LICENSE, NOTICE</Include-Resource>
           </instructions>
         </configuration>
       </plugin>
