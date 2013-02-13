@@ -46,6 +46,7 @@ import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Document;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Span;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Token;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.TreetaggerFactory;
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.exceptions.TreetaggerException;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.exceptions.TreetaggerModelPropertyFileInputColumnsException;
 
 /**
@@ -355,7 +356,9 @@ public class TabResource extends ResourceImpl
 						fileWriter.write(this.separator);						
 
 						anno = token.getLemmaAnnotation();
-						if (anno!=null) {
+						if (	(anno!=null) &&
+								(anno.getValue()!= null))
+						{
 							fileWriter.write(anno.getValue());
 						}
 
