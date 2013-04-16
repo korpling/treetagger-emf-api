@@ -1,0 +1,10 @@
+***********************************************************************************
+***								CHANGELOG for treetagger-api					***
+***********************************************************************************
+*	groupId:		de.hu_berlin.german.korpling								  *
+*	artifactId:		treetagger-api										          *
+***********************************************************************************
+
+Version 1.0.0
+=============
+	*+ added support for Eclipse juno via new SCR plugin (carrot-garden)
