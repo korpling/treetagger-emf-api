@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.hu_berlin.german.korpling.saltnpepper</groupId>
   <artifactId>misc-TreetaggerModel</artifactId>
-  <version>1.2.3</version>
+  <version>1.2.4-SNAPSHOT</version>
   <packaging>bundle</packaging>
   <description>Provides a Treetagger data model for TreetaggerModules and a Tokenizer that is used by both TreetaggerModules and RSTModules</description>
   <licenses>
@@ -21,7 +21,7 @@
     <notice.file>${basedir}/NOTICE</notice.file>
   </properties>
   <scm>
-    <developerConnection>scm:svn:https://korpling.german.hu-berlin.de/svn/saltnpepper/Misc/TreetaggerModel/tags/misc-TreetaggerModel-1.2.3</developerConnection>
+    <developerConnection>scm:svn:https://korpling.german.hu-berlin.de/svn/saltnpepper/Misc/TreetaggerModel/trunk</developerConnection>
   </scm>
   <distributionManagement>
     <repository>
