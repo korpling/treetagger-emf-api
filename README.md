@@ -1,7 +1,7 @@
 treetagger-emf-api
 ==================
 
-Searching for an easy way to make data coming from the TreeTagger accessible via Java?
+Searching for an easy way to make data coming from the TreeTagger accessible in Java?
 
 This project may help you. We here provide an api written in Java, to read and write data in the format produced by the tool TreeTagger by Helmut Schmid (see: http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/).
 
