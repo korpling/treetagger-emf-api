@@ -21,7 +21,9 @@
     <notice.file>${basedir}/NOTICE</notice.file>
   </properties>
   <scm>
-    <developerConnection>scm:git:git://github.com/korpling/treetagger-emf-api</developerConnection>
+    <connection>scm:git:git://github.com/korpling/treetagger-emf-api.git</connection>
+    <developerConnection>scm:git:git@github.com:korpling/treetagger-emf-api.git</developerConnection>    
+    <url>http://github.com/korpling/treetagger-emf-api</url>
   </scm>
   <distributionManagement>
     <repository>
