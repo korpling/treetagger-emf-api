@@ -11,12 +11,12 @@ The here provided api bases on a EMF model (see: http://www.eclipse.org/modeling
 
 ![The model of the treetagger-emf-api in EMF, a UML near dialect](./src/main/resources/model/treetagger.png)
 
-The base elements of the model are: Document, Span, Token and Annotation. Annotation is an abstract element, which is specified by the subelements: 
+The base elements of the model are: Document, Span, Token and Annotation. Annotation is an abstract element, which is specified by the sub elements: 
 * POSAnnotation (to be used as a part-of-speech annotation), 
 * LemmaAnnotation (to be used as a lemma annotation) and 
 * AnyAnnotation (to be used as any kind of an annotation, which is representable as a name-value pair). 
 
-An object of type Document represents a container element, it can be seen similar to a TreeTagger file. A Token represents a piece of a text, which is in general a word or a punctiation mark. The text is given by the field Token.text. Each Token object can be annotated by one of the listed types of annotations. A number of token objects can be bundled by a Span object, which can also be annotated. Bundling Token objects to such a Span object allows a grouping, for instance grouping words to a sentence etc. .
+An object of type Document represents a container element, it can be seen similar to a TreeTagger file. A Token represents a piece of a text, which is in general a word or a punctuation mark. The text is given by the field Token.text. Each Token object can be annotated by one of the listed types of annotations. A number of token objects can be bundled by a Span object, which can also be annotated. Bundling Token objects to such a Span object allows a grouping, for instance grouping words to a sentence etc. .
 
 You can also plug-in this api into your code via maven. 
 
