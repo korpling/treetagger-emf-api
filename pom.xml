@@ -12,6 +12,10 @@
       <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
     </license>
   </licenses>
+  <issueManagement>
+  	<system>GitHub</system>
+  	<url>https://github.com/korpling/treetagger-emf-api/issues</url>
+  </issueManagement>
   <properties>
     <github.global.oauth2Token>45dab16f75653b5253ddbf24acd8526ab6cdc162</github.global.oauth2Token>
  	<github.global.server>github</github.global.server>
