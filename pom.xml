@@ -97,17 +97,24 @@
     <plugins>
     	<!-- start: Plugin for automatic releasing -->
       <plugin>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>2.2.1</version>
-        <executions>
-			<execution>
-				<id>default</id>
-				<goals>
-				<goal>perform</goal>
-				</goals>
-			</execution>
-		</executions>
-      </plugin>
+			<artifactId>maven-release-plugin</artifactId>
+			<version>2.2.1</version>
+			<executions>
+				<execution>
+					<id>default</id>
+					<goals>
+						<goal>perform</goal>        			
+					</goals>
+					<configuration>
+						<pomFileName>treetagger-emf-api/pom.xml</pomFileName>
+					</configuration>
+				</execution>
+			</executions>
+			<configuration>
+			  <releaseProfiles>release</releaseProfiles>
+			  <goals>package assembly:single deploy</goals>
+			</configuration>
+	  </plugin>
       <!-- end: Plugin for automatic releasing -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
