@@ -123,7 +123,7 @@
             <descriptor>${assemblies.name}</descriptor>
           </descriptors>
           <appendAssemblyId>false</appendAssemblyId>
-          <finalName>${project.groupId}.misc.${project.artifactId}_${project.version}</finalName>
+          <finalName>${project.groupId}.${project.artifactId}_${project.version}</finalName>
           <outputDirectory>target/distribution</outputDirectory>
           <workDirectory>target/assembly/work</workDirectory>
         </configuration>
