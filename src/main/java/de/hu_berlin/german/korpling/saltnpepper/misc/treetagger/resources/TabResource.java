@@ -35,256 +35,199 @@ import java.util.regex.Pattern;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
-import org.osgi.service.log.LogService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.AnnotatableElement;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Annotation;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.AnyAnnotation;
-import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.POSAnnotation;
-import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.LemmaAnnotation;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Document;
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.LemmaAnnotation;
+import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.POSAnnotation;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Span;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.Token;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.TreetaggerFactory;
-import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.exceptions.TreetaggerException;
 import de.hu_berlin.german.korpling.saltnpepper.misc.treetagger.exceptions.TreetaggerModelPropertyFileInputColumnsException;
 
 /**
  * Resource for loading and saving of treetagger data
+ * 
  * @author hildebax
- *
+ * 
  */
-public class TabResource extends ResourceImpl
-{
-	//column seperator
-	private String separator= "\t";
-	
+public class TabResource extends ResourceImpl {
+	private static final Logger logger = LoggerFactory.getLogger(TabResource.class);
+	// column seperator
+	private String separator = "\t";
+
 	private String POSName = "pos";
 	private String LemmaName = "lemma";
-	
-	/**
-	 * Key for the LogService in the options map of load and save methods
-	 */
-	public static final String logServiceKey = "LOGSERVICE";
-	/**
-	 * Key for the Properties in the options map of load and save method
-	 */
-	public static final String propertiesKey = "PROPERTIES"; 
-	
+
 	/**
 	 * property key for the meta tag of input
 	 */
-	public static final String propertyInputMetaTag       = "treetagger.input.metaTag";
+	public static final String propertyInputMetaTag = "treetagger.input.metaTag";
 
 	/**
 	 * property key for the encoding of input file
 	 */
-	public static final String propertyInputFileEncoding  = "treetagger.input.fileEncoding";
+	public static final String propertyInputFileEncoding = "treetagger.input.fileEncoding";
 
 	/**
 	 * property key for the meta tag of output
 	 */
-	public static final String propertyOutputMetaTag      = "treetagger.output.metaTag";	
-	
+	public static final String propertyOutputMetaTag = "treetagger.output.metaTag";
+
 	/**
 	 * property key for the encoding of output file
 	 */
-	public static final String propertyOutputFileEncoding = "treetagger.output.fileEncoding";	
+	public static final String propertyOutputFileEncoding = "treetagger.output.fileEncoding";
 
 	/**
-	 * property key for the option to export any annotation  
+	 * property key for the option to export any annotation
 	 */
-	public static final String propertyExportAnyAnnotation = "treetagger.output.exportAnyAnnotation";	
-	
+	public static final String propertyExportAnyAnnotation = "treetagger.output.exportAnyAnnotation";
+
 	private static final Pattern inputColumnPattern = Pattern.compile("treetagger\\.input\\.column");
-	
-	//property default values
+
+	// property default values
 	private static final String defaultOutputFileEncoding = "UTF-8";
-	private static final String defaultInputFileEncoding  = "UTF-8";
+	private static final String defaultInputFileEncoding = "UTF-8";
 	private static final String defaultMetaTag = "meta";
-	private static final String defaultExportAnyAnnotation = "true"; 
-	
-	//BOM character
-	private static final Character utf8BOM = new Character((char)0xFEFF);
+	private static final String defaultExportAnyAnnotation = "true";
 
-	//----------------------------------------------------------
-	private LogService logService = null;
-	
-	/**
-	 * Getter for the LogService
-	 * @return the LogService
-	 */
-	public LogService getLogService() {
-		return logService;
-	}
-
-	/**
-	 * Setter for the LogService
-	 * @param logService the LogService
-	 */
-	public void setLogService(LogService logService) {
-		this.logService = logService;
-	}
+	// BOM character
+	private static final Character utf8BOM = new Character((char) 0xFEFF);
 
 	String currentFileName = "";
-	private void log(int logLevel, String logText) {
-		if (this.getLogService()!=null) {
-			this.getLogService().log(logLevel, "<File "+this.currentFileName+"> " + logText);
-		}
-	}
-	
-	private void logError  (String logText) { this.log(LogService.LOG_ERROR,   logText); }
-	private void logWarning(String logText) { this.log(LogService.LOG_WARNING, logText); }
-	private void logInfo   (String logText) { this.log(LogService.LOG_INFO,    logText); }
-//	private void logDebug  (String logText) { this.log(LogService.LOG_DEBUG,   logText); }
-	
-	//----------------------------------------------------------
-	
+
 	private Properties properties = null;
-	
+
 	/**
 	 * Getter for the Properties
+	 * 
 	 * @return properties
 	 */
 	public Properties getProperties() {
+		if (properties== null){
+			properties= new Properties();
+		}
 		return properties;
 	}
 
 	/**
-	 * Setter for the Properties
-	 * @param properties the properties
-	 */
-	public void setProperties(Properties properties) {
-		this.properties = properties;
-	}
-	//----------------------------------------------------------
-
-	
-	
-/*==============================================================================================================
-/* S A V I N G . . . 
-/*==============================================================================================================*/
-		
-	/**
 	 * Stores a treetagger model into tab separated file
-	 * @param options a map that may contain an instance of LogService and an instance of Properties, with {@link #logServiceKey} and {@link #propertiesKey} respectively as keys   
+	 * 
+	 * @param options
+	 *            a map that may contain an instance of LogService and an
+	 *            instance of Properties, with {@link #logServiceKey} and
+	 *            {@link #propertiesKey} respectively as keys
 	 */
- 	public void save(java.util.Map<?,?> options) throws java.io.IOException
-	{
-		if (options!=null) {
-			if (options.containsKey(logServiceKey)) {
-				this.setLogService((LogService)options.get(logServiceKey));		
-			}
-			if (options.containsKey(propertiesKey)) {
-				this.setProperties((Properties)options.get(propertiesKey));		
-			}
+	public void save(java.util.Map<?, ?> options) throws java.io.IOException {
+		if (options!= null){
+			getProperties().putAll(options);
 		}
-		
 		this.currentFileName = this.getURI().toFileString();
-		if (this.getProperties()==null) {
-			logWarning("no properties given for loading of resource. using defaults.");
-			this.setProperties(new Properties());
-		}
 		
-		String metaTag = properties.getProperty(propertyOutputMetaTag, defaultMetaTag);
-		logInfo(String.format("using meta tag '%s'",metaTag));
-		
-		String fileEncoding = properties.getProperty(propertyOutputFileEncoding, defaultOutputFileEncoding);
-		logInfo(String.format("using output file encoding '%s'",fileEncoding));
-		
-		boolean exportAnyAnnotation = properties.getProperty(propertyExportAnyAnnotation, defaultExportAnyAnnotation).equalsIgnoreCase("true");
-		logInfo("exporting any annotation = " + exportAnyAnnotation);	
-		
+		String metaTag = getProperties().getProperty(propertyOutputMetaTag, defaultMetaTag);
+		logger.info(String.format("using meta tag '%s'", metaTag));
+
+		String fileEncoding = getProperties().getProperty(propertyOutputFileEncoding, defaultOutputFileEncoding);
+		logger.info(String.format("using output file encoding '%s'", fileEncoding));
+
+		boolean exportAnyAnnotation = getProperties().getProperty(propertyExportAnyAnnotation, defaultExportAnyAnnotation).equalsIgnoreCase("true");
+		logger.info("exporting any annotation = " + exportAnyAnnotation);
+
 		BufferedWriter fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.currentFileName), fileEncoding));
-		try 
-		{
-			//write contents if some exists
-			if (	(this.getContents()!= null) &&
-					(this.getContents().size()!= 0))
-			{
-				//write all contents into file
-				for (EObject content: this.getContents())
-				{	
+		try {
+			// write contents if some exists
+			if ((this.getContents() != null) && (this.getContents().size() != 0)) {
+				// write all contents into file
+				for (EObject content : this.getContents()) {
 					if (!(content instanceof Document)) {
-						String errorMessage = "Cannot store content. The given content is not of type treetagger::document: "+ content;
-						logError(errorMessage);
+						String errorMessage = "Cannot store content. The given content is not of type treetagger::document: " + content;
+						logger.error(errorMessage);
 						throw new RuntimeException(errorMessage);
 					}
 
-					Document document = (Document)content;
-					
-					//this list and this hashmap are used if any annotation is to be exported
-					//the list will contain the sorted names of all annotation names occuring on all tokens in the document
-					//the map will map from token index to another map, which maps from annotation name to AnyAnotation
+					Document document = (Document) content;
+
+					// this list and this hashmap are used if any annotation is
+					// to be exported
+					// the list will contain the sorted names of all annotation
+					// names occuring on all tokens in the document
+					// the map will map from token index to another map, which
+					// maps from annotation name to AnyAnotation
 					ArrayList<String> columnNamesList = null;
-					HashMap<Integer,HashMap<String,AnyAnnotation>> tokenMap = null;
-					
+					HashMap<Integer, HashMap<String, AnyAnnotation>> tokenMap = null;
+
 					if (exportAnyAnnotation) {
-						//calculate number of columns and collect their names
+						// calculate number of columns and collect their names
 						HashSet<String> annoNamesSet = new HashSet<String>();
-						tokenMap = new HashMap<Integer,HashMap<String,AnyAnnotation>>(); 
-						for (Integer tokenIndex=0;tokenIndex<document.getTokens().size();tokenIndex++)
-						{
+						tokenMap = new HashMap<Integer, HashMap<String, AnyAnnotation>>();
+						for (Integer tokenIndex = 0; tokenIndex < document.getTokens().size(); tokenIndex++) {
 							Token token = document.getTokens().get(tokenIndex);
 							EList<Annotation> annotationList = token.getAnnotations();
-							if ((token.getPosAnnotation()!=null)&&(token.getLemmaAnnotation()!=null)&&(annotationList.size()>2)) {
-								tokenMap.put(tokenIndex, new HashMap<String,AnyAnnotation>());
-								HashMap<String,AnyAnnotation> annoMap = tokenMap.get(tokenIndex);
-								for (int annotationIndex=0;annotationIndex<annotationList.size();annotationIndex++) {
+							if ((token.getPosAnnotation() != null) && (token.getLemmaAnnotation() != null) && (annotationList.size() > 2)) {
+								tokenMap.put(tokenIndex, new HashMap<String, AnyAnnotation>());
+								HashMap<String, AnyAnnotation> annoMap = tokenMap.get(tokenIndex);
+								for (int annotationIndex = 0; annotationIndex < annotationList.size(); annotationIndex++) {
 									Annotation annotation = annotationList.get(annotationIndex);
 									if (annotation instanceof AnyAnnotation) {
 										String annotationName = annotation.getName();
 										annoNamesSet.add(annotationName);
-										annoMap.put(annotationName, (AnyAnnotation)annotation);
+										annoMap.put(annotationName, (AnyAnnotation) annotation);
 									}
 								}
 							}
 						}
-						//sort columns
+						// sort columns
 						columnNamesList = new ArrayList<String>(annoNamesSet);
 						Collections.sort(columnNamesList);
-						logInfo("The following columns appear in the output file additionally to word form, part-of-speech and lemma: " + columnNamesList.toString());
+						logger.info("The following columns appear in the output file additionally to word form, part-of-speech and lemma: " + columnNamesList.toString());
 					}
-					
-					fileWriter.write(String.format("<%s",metaTag));
-					for (int i=0;i<document.getAnnotations().size();i++) {
+
+					fileWriter.write(String.format("<%s", metaTag));
+					for (int i = 0; i < document.getAnnotations().size(); i++) {
 						Annotation annotation = document.getAnnotations().get(i);
-						fileWriter.write(String.format(" %s=\"%s\"",annotation.getName(),annotation.getValue()));
+						fileWriter.write(String.format(" %s=\"%s\"", annotation.getName(), annotation.getValue()));
 					}
 					fileWriter.write(">\n");
-		
+
 					ArrayList<Span> spanList = new ArrayList<Span>();
-					HashMap<String,Integer> spanNamesCounts = new HashMap<String,Integer>();
-					
-					for (Integer tokenIndex=0;tokenIndex<document.getTokens().size();tokenIndex++)
-					{
+					HashMap<String, Integer> spanNamesCounts = new HashMap<String, Integer>();
+
+					for (Integer tokenIndex = 0; tokenIndex < document.getTokens().size(); tokenIndex++) {
 						Token token = document.getTokens().get(tokenIndex);
 
-						//write end tags
-						for (int spanIndex=spanList.size()-1;spanIndex>=0;spanIndex--) {
+						// write end tags
+						for (int spanIndex = spanList.size() - 1; spanIndex >= 0; spanIndex--) {
 							Span span = spanList.get(spanIndex);
 							if (!token.getSpans().contains(span)) {
 								String spanName = span.getName();
 								fileWriter.write("</" + spanName + ">\n");
 								spanList.remove(span);
 								Integer spanNameCount = spanNamesCounts.get(spanName);
-								if (spanNameCount==1) {
+								if (spanNameCount == 1) {
 									spanNamesCounts.remove(spanName);
-								}
-								else {
-									spanNamesCounts.put(spanName, spanNameCount-1);
+								} else {
+									spanNamesCounts.put(spanName, spanNameCount - 1);
 								}
 							}
 						}
-						
-					//calculate order for new opening tags by number of tokens contained in spans ("size" of span)
-					//if new opening spans have different sizes, the bigger ones must open before the smaller
-						
-						//for each occuring span size, a key is put into this map, mapping to a list of spans with this size 
-						HashMap<Integer,ArrayList<Span>> size2SpanlistMap = new HashMap<Integer,ArrayList<Span>>();
-						//this list is used to have all occuring sizes sortable without much converting of the maps keySet 
+
+						// calculate order for new opening tags by number of
+						// tokens contained in spans ("size" of span)
+						// if new opening spans have different sizes, the bigger
+						// ones must open before the smaller
+
+						// for each occuring span size, a key is put into this
+						// map, mapping to a list of spans with this size
+						HashMap<Integer, ArrayList<Span>> size2SpanlistMap = new HashMap<Integer, ArrayList<Span>>();
+						// this list is used to have all occuring sizes sortable
+						// without much converting of the maps keySet
 						ArrayList<Integer> sizeList = new ArrayList<Integer>();
-						for (int spanIndex=token.getSpans().size()-1;spanIndex>=0;spanIndex--) {
+						for (int spanIndex = token.getSpans().size() - 1; spanIndex >= 0; spanIndex--) {
 							Span span = token.getSpans().get(spanIndex);
 							Integer spanSize = span.getTokens().size();
 							if (!spanList.contains(span)) {
@@ -297,448 +240,415 @@ public class TabResource extends ResourceImpl
 						}
 						Collections.sort(sizeList);
 						Collections.reverse(sizeList);
-						//write opening tags in xml conform order
-						for (int sizeIndex=0; sizeIndex<sizeList.size(); sizeIndex++) {
+						// write opening tags in xml conform order
+						for (int sizeIndex = 0; sizeIndex < sizeList.size(); sizeIndex++) {
 							int size = sizeList.get(sizeIndex);
-							
-							
+
 							ArrayList<String> currentSpannames = new ArrayList<String>();
-							HashMap<String,ArrayList<Span>> currentSpanMap = new HashMap<String,ArrayList<Span>>();
+							HashMap<String, ArrayList<Span>> currentSpanMap = new HashMap<String, ArrayList<Span>>();
 							{
 								ArrayList<Span> currentSpanlist = size2SpanlistMap.get(size);
-								for (int spanIndex=0; spanIndex<currentSpanlist.size(); spanIndex++) {
+								for (int spanIndex = 0; spanIndex < currentSpanlist.size(); spanIndex++) {
 									Span span = currentSpanlist.get(spanIndex);
 									String spanName = span.getName();
 									if (!currentSpanMap.containsKey(spanName)) {
 										currentSpannames.add(spanName);
-										currentSpanMap.put(spanName, new ArrayList<Span>());	
+										currentSpanMap.put(spanName, new ArrayList<Span>());
 									}
 									currentSpanMap.get(spanName).add(span);
 								}
 							}
 							Collections.sort(currentSpannames);
-							
-							for (int spanNameIndex=0; spanNameIndex<currentSpannames.size(); spanNameIndex++) {
+
+							for (int spanNameIndex = 0; spanNameIndex < currentSpannames.size(); spanNameIndex++) {
 								String spansName = currentSpannames.get(spanNameIndex);
 								ArrayList<Span> currentSpanlist = currentSpanMap.get(spansName);
 
 								if (!spanNamesCounts.containsKey(spansName)) {
 									spanNamesCounts.put(spansName, currentSpanlist.size());
+								} else {
+									spanNamesCounts.put(spansName, spanNamesCounts.get(spansName) + currentSpanlist.size());
 								}
-								else {
-									spanNamesCounts.put(spansName, spanNamesCounts.get(spansName)+currentSpanlist.size());
+								if (spanNamesCounts.get(spansName) > 1) {
+									logger.warn("There are " + spanNamesCounts.get(spansName) + " spans named " + spansName + " open at the same time!");
 								}
-								if (spanNamesCounts.get(spansName)>1) {
-									logWarning("There are " + spanNamesCounts.get(spansName) + " spans named " + spansName + " open at the same time!");
-								}
-								for (int spanIndex=0; spanIndex<currentSpanlist.size(); spanIndex++) {
-									Span span = currentSpanlist.get(spanIndex);	
+								for (int spanIndex = 0; spanIndex < currentSpanlist.size(); spanIndex++) {
+									Span span = currentSpanlist.get(spanIndex);
 									spanList.add(span);
-									fileWriter.write("<"+span.getName());
-									for (Annotation anno: span.getAnnotations()) {
+									fileWriter.write("<" + span.getName());
+									for (Annotation anno : span.getAnnotations()) {
 										fileWriter.write(" " + anno.getName() + "=\"" + anno.getValue() + "\"");
 									}
 									fileWriter.write(">\n");
 								}
 							}
 						}
-						
-						//write token data
+
+						// write token data
 						fileWriter.write(token.getText());
 
 						fileWriter.write(this.separator);
-						
+
 						Annotation anno = token.getPosAnnotation();
-						if (anno!=null) {
+						if (anno != null) {
 							fileWriter.write(anno.getValue());
 						}
-						
-						fileWriter.write(this.separator);						
+
+						fileWriter.write(this.separator);
 
 						anno = token.getLemmaAnnotation();
-						if (	(anno!=null) &&
-								(anno.getValue()!= null))
-						{
+						if ((anno != null) && (anno.getValue() != null)) {
 							fileWriter.write(anno.getValue());
 						}
 
 						if (exportAnyAnnotation) {
-							for (int colIndex=0;colIndex<columnNamesList.size();colIndex++) {
+							for (int colIndex = 0; colIndex < columnNamesList.size(); colIndex++) {
 								fileWriter.write(this.separator);
 								String columnName = columnNamesList.get(colIndex);
-								HashMap<String,AnyAnnotation> annoMap = tokenMap.get(tokenIndex);
-								if (annoMap!=null) {
+								HashMap<String, AnyAnnotation> annoMap = tokenMap.get(tokenIndex);
+								if (annoMap != null) {
 									anno = annoMap.get(columnName);
-									if (anno!=null) {
+									if (anno != null) {
 										fileWriter.write(anno.getValue());
 									}
 								}
 							}
 						}
-						
+
 						fileWriter.write("\n");
 					}
 
-					//write final end tags
-					for (int spanIndex=spanList.size()-1;spanIndex>=0;spanIndex--) {
+					// write final end tags
+					for (int spanIndex = spanList.size() - 1; spanIndex >= 0; spanIndex--) {
 						Span span = spanList.get(spanIndex);
 						fileWriter.write("</" + span.getName() + ">\n");
 						spanList.remove(span);
 					}
-					
-					//write end of document
+
+					// write end of document
 					fileWriter.write(String.format("</%s>\n", metaTag));
-					
+
 				}
 			}
 		} catch (RuntimeException e) {
 			throw e;
-		}
-		finally
-		{
+		} finally {
 			fileWriter.flush();
 			fileWriter.close();
-			fileWriter= null;
+			fileWriter = null;
 		}
 	}
 
-	
-		
-/*==============================================================================================================
-/* L O A D I N G . . .
-/*==============================================================================================================*/
-	
 	/*
-	 * auxilliary method for processing input file 
+	 * auxilliary method for processing input file
 	 */
 	private void addAttributesAsAnnotations(String tag, AnnotatableElement annotatableElement) {
-		ArrayList<SimpleEntry<String,String>> attributeValueList = XMLUtils.getAttributeValueList(tag);
-		for (int i=0; i<attributeValueList.size();i++) {
-			SimpleEntry<String,String> entry = attributeValueList.get(i); 
+		ArrayList<SimpleEntry<String, String>> attributeValueList = XMLUtils.getAttributeValueList(tag);
+		for (int i = 0; i < attributeValueList.size(); i++) {
+			SimpleEntry<String, String> entry = attributeValueList.get(i);
 			Annotation annotation = TreetaggerFactory.eINSTANCE.createAnnotation();
 			annotation.setName(entry.getKey());
 			annotation.setValue(entry.getValue());
 			annotatableElement.getAnnotations().add(annotation);
 		}
 	}
-	
-	private Document currentDocument = null; 
+
+	private Document currentDocument = null;
 	private ArrayList<Span> openSpans = new ArrayList<Span>();
 	private int fileLineCount = 0;
 	private boolean xmlDocumentOpen = false;
-	private HashMap<Integer,String> columnMap = null;
-	private ArrayList<Integer> dataRowsWithTooMuchColumns = new ArrayList<Integer>(); 
-	private ArrayList<Integer> dataRowsWithTooLessColumns = new ArrayList<Integer>();	
+	private HashMap<Integer, String> columnMap = null;
+	private ArrayList<Integer> dataRowsWithTooMuchColumns = new ArrayList<Integer>();
+	private ArrayList<Integer> dataRowsWithTooLessColumns = new ArrayList<Integer>();
 
-	
 	/*
-	 * auxilliary method for processing input file 
+	 * auxilliary method for processing input file
 	 */
 	private void beginDocument(String startTag) {
-		if (this.currentDocument!=null) {
+		if (this.currentDocument != null) {
 			this.endDocument();
 		}
 		this.currentDocument = TreetaggerFactory.eINSTANCE.createDocument();
-		this.xmlDocumentOpen = (startTag!=null);  
+		this.xmlDocumentOpen = (startTag != null);
 		if (this.xmlDocumentOpen) {
 			addAttributesAsAnnotations(startTag, this.currentDocument);
 		}
 	}
-	
+
 	/*
-	 * auxilliary method for processing input file 
+	 * auxilliary method for processing input file
 	 */
 	private void endDocument() {
-		if (this.currentDocument!=null) {
+		if (this.currentDocument != null) {
 			if (!this.openSpans.isEmpty()) {
 				String openSpanNames = "";
-				for (int spanIndex=0;spanIndex<this.openSpans.size();spanIndex++) {
+				for (int spanIndex = 0; spanIndex < this.openSpans.size(); spanIndex++) {
 					Span span = this.openSpans.get(spanIndex);
 					openSpanNames += ",</" + span.getName() + ">";
-					for (int tokenIndex=span.getTokens().size()-1;tokenIndex>=0;tokenIndex--) {
+					for (int tokenIndex = span.getTokens().size() - 1; tokenIndex >= 0; tokenIndex--) {
 						Token token = span.getTokens().get(tokenIndex);
 						if (token.getSpans().contains(span)) {
 							token.getSpans().remove(span);
-						}
-						else {
+						} else {
 							break;
 						}
 					}
 				}
-				logWarning(String.format("input file '%s' (line %d): missing end tag(s) '%s'. tag(s) will be ignored!",this.getURI().lastSegment(),this.fileLineCount,openSpanNames.substring(1)));
+				logger.warn(String.format("input file '%s' (line %d): missing end tag(s) '%s'. tag(s) will be ignored!", this.getURI().lastSegment(), this.fileLineCount, openSpanNames.substring(1)));
 			}
 			if (this.xmlDocumentOpen) {
-				logWarning(String.format("input file '%s' (line %d): missing document end tag. document will be ignored!",this.getURI().lastSegment(),this.fileLineCount));
-			} 
-			else {
+				logger.warn(String.format("input file '%s' (line %d): missing document end tag. document will be ignored!", this.getURI().lastSegment(), this.fileLineCount));
+			} else {
 				this.getContents().add(this.currentDocument);
 			}
-			
-			this.currentDocument=null;
-			this.xmlDocumentOpen=false;
+
+			this.currentDocument = null;
+			this.xmlDocumentOpen = false;
 		}
 		this.openSpans.clear();
 	}
-	
+
 	/*
-	 * auxilliary method for processing input file 
+	 * auxilliary method for processing input file
 	 */
 	private void beginSpan(String spanName, String startTag) {
-		if (this.currentDocument==null) {
+		if (this.currentDocument == null) {
 			this.beginDocument(null);
 		}
 		Span span = TreetaggerFactory.eINSTANCE.createSpan();
-		this.openSpans.add(0,span);
+		this.openSpans.add(0, span);
 		span.setName(spanName);
 		addAttributesAsAnnotations(startTag, span);
 	}
 
 	/*
-	 * auxilliary method for processing input file 
+	 * auxilliary method for processing input file
 	 */
 	private void endSpan(String spanName) {
-		if (this.currentDocument==null) {
-			logWarning(String.format("input file '%s' (line '%d'): end tag '</%s>' out of nowhere. tag will be ignored!",this.getURI().lastSegment(),this.fileLineCount,spanName));
-		} 
-		else {
+		if (this.currentDocument == null) {
+			logger.warn(String.format("input file '%s' (line '%d'): end tag '</%s>' out of nowhere. tag will be ignored!", this.getURI().lastSegment(), this.fileLineCount, spanName));
+		} else {
 			boolean matchingStartTagExists = false;
-			for (int i=0; i<this.openSpans.size(); i++) {
+			for (int i = 0; i < this.openSpans.size(); i++) {
 				Span openSpan = this.openSpans.get(i);
 				if (openSpan.getName().equalsIgnoreCase(spanName)) {
 					matchingStartTagExists = true;
 					if (openSpan.getTokens().isEmpty()) {
-						logWarning(String.format("input file '%s' (line %d): no tokens contained in span '<%s>'. span will be ignored!",this.getURI().lastSegment(),this.fileLineCount,openSpan.getName()));	
+						logger.warn(String.format("input file '%s' (line %d): no tokens contained in span '<%s>'. span will be ignored!", this.getURI().lastSegment(), this.fileLineCount, openSpan.getName()));
 					}
 					this.openSpans.remove(i);
 					break;
 				}
 			}
 			if (!matchingStartTagExists) {
-				logWarning(String.format("input file '%s' (line %d): no corresponding opening tag found for end tag '</%s>'. tag will be ignored!",this.getURI().lastSegment(),this.fileLineCount,spanName));
+				logger.warn(String.format("input file '%s' (line %d): no corresponding opening tag found for end tag '</%s>'. tag will be ignored!", this.getURI().lastSegment(), this.fileLineCount, spanName));
 			}
 		}
 	}
-	
+
 	/*
-	 * auxilliary method for processing input file 
+	 * auxilliary method for processing input file
 	 */
 	private void addDataRow(String row) {
-		if (this.currentDocument==null) {
+		if (this.currentDocument == null) {
 			this.beginDocument(null);
 		}
 		String[] tuple = row.split(separator);
-		Token token= TreetaggerFactory.eINSTANCE.createToken();
+		Token token = TreetaggerFactory.eINSTANCE.createToken();
 		this.currentDocument.getTokens().add(token);
 		token.setText(tuple[0]);
-		for (int i=0;i<this.openSpans.size();i++) {
+		for (int i = 0; i < this.openSpans.size(); i++) {
 			Span span = openSpans.get(i);
 			token.getSpans().add(span);
 			span.getTokens().add(token);
 		}
-		
-		if (tuple.length>this.columnMap.size()+1) {
+
+		if (tuple.length > this.columnMap.size() + 1) {
 			this.dataRowsWithTooMuchColumns.add(this.fileLineCount);
-		}
-		else if (tuple.length<=this.columnMap.size()) {
+		} else if (tuple.length <= this.columnMap.size()) {
 			this.dataRowsWithTooLessColumns.add(this.fileLineCount);
 		}
 
-		for (int index=1; index<Math.min(this.columnMap.size()+1,tuple.length); index++) {
+		for (int index = 1; index < Math.min(this.columnMap.size() + 1, tuple.length); index++) {
 			Annotation anno = null;
 			String columnName = this.columnMap.get(index);
 			if (columnName.equalsIgnoreCase(this.POSName)) {
 				anno = TreetaggerFactory.eINSTANCE.createPOSAnnotation();
-				token.setPosAnnotation((POSAnnotation)anno);
-			} 
-			else if (columnName.equalsIgnoreCase(this.LemmaName)) {
+				token.setPosAnnotation((POSAnnotation) anno);
+			} else if (columnName.equalsIgnoreCase(this.LemmaName)) {
 				anno = TreetaggerFactory.eINSTANCE.createLemmaAnnotation();
-				token.setLemmaAnnotation((LemmaAnnotation)anno);					
-			}
-			else {
+				token.setLemmaAnnotation((LemmaAnnotation) anno);
+			} else {
 				anno = TreetaggerFactory.eINSTANCE.createAnyAnnotation();
-				anno.setName(columnName); 
+				anno.setName(columnName);
 				token.getAnnotations().add(anno);
 			}
 			anno.setValue(tuple[index]);
 		}
 	}
-	
+
 	/*
-	 * auxilliary method for processing input file 
+	 * auxilliary method for processing input file
 	 */
 	private void setDocumentNames() {
 		String documentBaseName = this.getURI().lastSegment().split("[.]")[0];
 		int documentCount = this.getContents().size();
-	
+
 		switch (documentCount) {
-			case 0: 
-				logWarning(String.format("no valid document data contained in file '%s'",this.getURI().toFileString())); 
-				break;
-			case 1:
-				//set simple document name
-				((Document)this.getContents().get(0)).setName(documentBaseName);
-				break;
-			default:
-				//set document names with leading zeros for number extensions
-				int documentCountDigits = String.valueOf(documentCount).length();
-				for (int docIndex=0;docIndex<documentCount;docIndex++) {
-					String docNumber = Integer.toString(docIndex);
-					while (docNumber.length()<documentCountDigits) {
-						docNumber = "0" + docNumber;
-					}
-					((Document)this.getContents().get(docIndex)).setName(documentBaseName + "_" + docNumber);
+		case 0:
+			logger.warn(String.format("no valid document data contained in file '%s'", this.getURI().toFileString()));
+			break;
+		case 1:
+			// set simple document name
+			((Document) this.getContents().get(0)).setName(documentBaseName);
+			break;
+		default:
+			// set document names with leading zeros for number extensions
+			int documentCountDigits = String.valueOf(documentCount).length();
+			for (int docIndex = 0; docIndex < documentCount; docIndex++) {
+				String docNumber = Integer.toString(docIndex);
+				while (docNumber.length() < documentCountDigits) {
+					docNumber = "0" + docNumber;
 				}
-				break;
+				((Document) this.getContents().get(docIndex)).setName(documentBaseName + "_" + docNumber);
+			}
+			break;
 		}
 	}
-	
+
 	/**
-	 * validates and return the input columns definition from the properties file
+	 * validates and return the input columns definition from the properties
+	 * file
 	 */
-	protected HashMap<Integer,String> getColumns() {
-		HashMap<Integer,String> retVal       = new HashMap<Integer,String>(); 
-		Object[]                keyArray     = this.getProperties().keySet().toArray();
-		int                     numOfKeys    = this.getProperties().size();
-		String					errorMessage = null;
-		
-		for (int keyIndex=0; keyIndex<numOfKeys; keyIndex++) {
-			
-			String key = (String)keyArray[keyIndex];
+	protected HashMap<Integer, String> getColumns() {
+		HashMap<Integer, String> retVal = new HashMap<Integer, String>();
+		Object[] keyArray = this.getProperties().keySet().toArray();
+		int numOfKeys = this.getProperties().size();
+		String errorMessage = null;
+
+		for (int keyIndex = 0; keyIndex < numOfKeys; keyIndex++) {
+
+			String key = (String) keyArray[keyIndex];
 			if (inputColumnPattern.matcher(key).find()) {
-				
-				//try to extract the number at the end of the key
-				String  indexStr = key.substring("treetagger.input.column".length());
-				String  name     = this.getProperties().getProperty(key);
-				Integer index    = null; 
-				
+
+				// try to extract the number at the end of the key
+				String indexStr = key.substring("treetagger.input.column".length());
+				String name = this.getProperties().getProperty(key);
+				Integer index = null;
+
 				try {
 					index = Integer.valueOf(indexStr);
-				}
-				catch (NumberFormatException e) {
-					errorMessage = "Invalid property name '"+key+"': " + indexStr + " is not a valid number!";
-					logError(errorMessage);
+				} catch (NumberFormatException e) {
+					errorMessage = "Invalid property name '" + key + "': " + indexStr + " is not a valid number!";
+					logger.error(errorMessage);
 					throw new TreetaggerModelPropertyFileInputColumnsException(errorMessage);
 				}
-				
-				//minimal index is 1
-				if (index<=0) {
-					errorMessage = "Invalid settings in properties file: no column index less than 1 allowed!"; 
-					logError(errorMessage);
+
+				// minimal index is 1
+				if (index <= 0) {
+					errorMessage = "Invalid settings in properties file: no column index less than 1 allowed!";
+					logger.error(errorMessage);
 					throw new TreetaggerModelPropertyFileInputColumnsException(errorMessage);
 				}
-				
-				//with the standard Properties class, this can never happen... 
+
+				// with the standard Properties class, this can never happen...
 				if (retVal.containsKey(index)) {
-					errorMessage = "Invalid settings in properties file:  More than one column is defined for index '" + index + "'"; 
-					logError(errorMessage);
-					throw new TreetaggerModelPropertyFileInputColumnsException(errorMessage);					
+					errorMessage = "Invalid settings in properties file:  More than one column is defined for index '" + index + "'";
+					logger.error(errorMessage);
+					throw new TreetaggerModelPropertyFileInputColumnsException(errorMessage);
 				}
 
 				if (retVal.containsValue(name)) {
-					errorMessage = "Invalid settings in properties file:  More than one column is defined for name '" + name + "'"; 
-					logError(errorMessage);
-					throw new TreetaggerModelPropertyFileInputColumnsException(errorMessage);					
+					errorMessage = "Invalid settings in properties file:  More than one column is defined for name '" + name + "'";
+					logger.error(errorMessage);
+					throw new TreetaggerModelPropertyFileInputColumnsException(errorMessage);
 				}
-				
+
 				retVal.put(index, name);
 			}
 		}
-				
-		//return defaults if nothing is set in the properties file
-		if (retVal.size()==0) {
-			retVal.put(1,this.POSName);
-			retVal.put(2,this.LemmaName);
+
+		// return defaults if nothing is set in the properties file
+		if (retVal.size() == 0) {
+			retVal.put(1, this.POSName);
+			retVal.put(2, this.LemmaName);
 			return retVal;
 		}
-		
-		//check consecutivity of indexes 
-		for (int index=1; index<=retVal.size(); index++) {
+
+		// check consecutivity of indexes
+		for (int index = 1; index <= retVal.size(); index++) {
 			if (!retVal.containsKey(index)) {
-				errorMessage = "Invalid settings in properties file: column indexes are not consecutive, column"+index+" missing!"; 
-				logError(errorMessage);
+				errorMessage = "Invalid settings in properties file: column indexes are not consecutive, column" + index + " missing!";
+				logger.error(errorMessage);
 				throw new TreetaggerModelPropertyFileInputColumnsException(errorMessage);
 			}
 		}
 		return retVal;
 	}
 
-	
 	/**
 	 * Loads a resource into treetagger model from tab separated file.
-	 * @param options a map that may contain an instance of LogService and an instance of Properties, with {@link #logServiceKey} and {@link #propertiesKey} respectively as keys 
+	 * 
+	 * @param options
+	 *            a map that may contain an instance of LogService and an
+	 *            instance of Properties, with {@link #logServiceKey} and
+	 *            {@link #propertiesKey} respectively as keys
 	 */
-	public void load(java.util.Map<?,?> options) throws IOException
-	{
+	public void load(java.util.Map<?, ?> options) throws IOException {
 		this.getContents().clear();
 		this.openSpans.clear();
-		this.currentDocument = null; 
+		this.currentDocument = null;
 		this.fileLineCount = 0;
 		this.xmlDocumentOpen = false;
 		
-		if (options!=null) {
-			if (options.containsKey(logServiceKey)) {
-				this.setLogService((LogService)options.get(logServiceKey));		
-			}
-			if (options.containsKey(propertiesKey)) {
-				this.setProperties((Properties)options.get(propertiesKey));		
-			}
+		if (options!= null){
+			getProperties().putAll(options);
 		}
-
-		if (this.getURI()== null) {
+		
+		if (this.getURI() == null) {
 			String errorMessage = "Cannot load any resource, because no uri is given.";
-			logError(errorMessage);
+			logger.error(errorMessage);
 			throw new NullPointerException(errorMessage);
 		}
 		this.currentFileName = this.getURI().toFileString();
 		
-		if (this.getProperties()==null) {
-			logWarning("no properties given for loading of resource. using defaults.");
-			this.setProperties(new Properties());
-		}
-		
-		String metaTag = properties.getProperty(propertyInputMetaTag, defaultMetaTag);
-		logInfo(String.format("using meta tag '%s'",metaTag));
-		
-		String fileEncoding = properties.getProperty(propertyInputFileEncoding, defaultInputFileEncoding);
-		logInfo(String.format("using input file encoding '%s'",fileEncoding));
+		String metaTag = getProperties().getProperty(propertyInputMetaTag, defaultMetaTag);
+		logger.info("using meta tag '{}'", metaTag);
+
+		String fileEncoding = getProperties().getProperty(propertyInputFileEncoding, defaultInputFileEncoding);
+		logger.info("using input file encoding '{}'", fileEncoding);
 
 		this.columnMap = getColumns();
-		
-		BufferedReader fileReader = new BufferedReader(new InputStreamReader(new FileInputStream(this.currentFileName),fileEncoding));
+
+		BufferedReader fileReader = new BufferedReader(new InputStreamReader(new FileInputStream(this.currentFileName), fileEncoding));
 		String line = null;
 		this.fileLineCount = 0;
-		while((line = fileReader.readLine()) != null) {
-			if (line.trim().length()>0) {
-				//delete BOM if exists
-				if ((this.fileLineCount==0)&&(line.startsWith(utf8BOM.toString()))) {
+		while ((line = fileReader.readLine()) != null) {
+			if (line.trim().length() > 0) {
+				// delete BOM if exists
+				if ((this.fileLineCount == 0) && (line.startsWith(utf8BOM.toString()))) {
 					line = line.substring(utf8BOM.toString().length());
-					logInfo("BOM recognised and ignored");
+					logger.info("BOM recognised and ignored");
 				}
-
 				this.fileLineCount++;
 				if (XMLUtils.isProcessingInstructionTag(line)) {
-					//do nothing; ignore processing instructions
-				}
-				else if (XMLUtils.isStartTag(line)) {
+					// do nothing; ignore processing instructions
+				} else if (XMLUtils.isStartTag(line)) {
 					String startTagName = XMLUtils.getName(line);
 					if (startTagName.equalsIgnoreCase(metaTag)) {
 						this.beginDocument(line);
-					}
-					else {
+					} else {
 						this.beginSpan(startTagName, line);
 					}
-				} 
-				else if (XMLUtils.isEndTag(line)) {
+				} else if (XMLUtils.isEndTag(line)) {
 					String endTagName = XMLUtils.getName(line);
 					if (endTagName.equalsIgnoreCase(metaTag)) {
 						this.xmlDocumentOpen = false;
 						this.endDocument();
-					}
-					else {
+					} else {
 						this.endSpan(endTagName);
 					}
-				}
-				else {
+				} else {
 					this.addDataRow(line);
 				}
 			}
@@ -747,12 +657,12 @@ public class TabResource extends ResourceImpl
 		fileReader.close();
 
 		this.setDocumentNames();
-		
-		if (this.dataRowsWithTooLessColumns.size()>0) {
-			logWarning(String.format("%s rows in input file had less data columns than expected! (Rows %s)", this.dataRowsWithTooLessColumns.size(), this.dataRowsWithTooLessColumns.toString()));
+
+		if (this.dataRowsWithTooLessColumns.size() > 0) {
+			logger.warn(String.format("%s rows in input file had less data columns than expected! (Rows %s)", this.dataRowsWithTooLessColumns.size(), this.dataRowsWithTooLessColumns.toString()));
 		}
-		if (this.dataRowsWithTooMuchColumns.size()>0) {
-			logWarning(String.format("%s rows in input file had more data columns than expected! Additional data was ignored! (Rows %s)", this.dataRowsWithTooMuchColumns.size(), this.dataRowsWithTooMuchColumns.toString()));
+		if (this.dataRowsWithTooMuchColumns.size() > 0) {
+			logger.warn(String.format("%s rows in input file had more data columns than expected! Additional data was ignored! (Rows %s)", this.dataRowsWithTooMuchColumns.size(), this.dataRowsWithTooMuchColumns.toString()));
 		}
 	}
 }
