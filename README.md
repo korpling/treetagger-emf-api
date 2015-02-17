@@ -49,7 +49,7 @@ Please help us, to make the api better and give us feedback and send a bug repor
 
 license
 ===
-  Copyright 2009 Humboldt University of Berlin, INRIA.
+  Copyright 2009 Humboldt-Universität zu Berlin, INRIA.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
