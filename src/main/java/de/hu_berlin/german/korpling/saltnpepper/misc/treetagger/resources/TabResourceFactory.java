@@ -23,15 +23,14 @@ import org.eclipse.emf.ecore.resource.impl.ResourceFactoryImpl;
 
 /**
  * Factory for TabResource
+ * 
  * @author hildebax
- *
+ * 
  */
-public class TabResourceFactory extends ResourceFactoryImpl 
-{
-	public Resource createResource(URI uri)
-	{
-		Resource resource=new TabResource();
+public class TabResourceFactory extends ResourceFactoryImpl {
+	public Resource createResource(URI uri) {
+		Resource resource = new TabResource();
 		resource.setURI(uri);
-		return(resource);
+		return (resource);
 	}
 }
