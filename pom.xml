@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.hu_berlin.german.korpling</groupId>
 	<artifactId>treetagger-emf-api</artifactId>
-	<version>0.0.7-SNAPSHOT</version>
+	<version>0.0.7</version>
 	<packaging>bundle</packaging>
 	<description>This project provides a emf meta model and a java api for the treetagger data format produced and consumed by the linguistic tagging tool TreeTagger by Helmut Schmid (see: http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/).</description>
 	<licenses>
@@ -31,7 +30,7 @@
 		<connection>scm:git:git://github.com/korpling/treetagger-emf-api.git</connection>
 		<developerConnection>scm:git:git@github.com:korpling/treetagger-emf-api.git</developerConnection>
 		<url>http://github.com/korpling/treetagger-emf-api</url>
-		<tag>HEAD</tag>
+		<tag>treetagger-emf-api-0.0.7</tag>
 	</scm>
 	<distributionManagement>
 		<repository>
