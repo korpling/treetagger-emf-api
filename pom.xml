@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.hu_berlin.german.korpling</groupId>
 	<artifactId>treetagger-emf-api</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 	<description>This project provides a emf meta model and a java api for the treetagger data format produced and consumed by the linguistic tagging tool TreeTagger by Helmut Schmid (see: http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/).</description>
 	<licenses>
@@ -30,7 +30,7 @@
 		<connection>scm:git:git://github.com/korpling/treetagger-emf-api.git</connection>
 		<developerConnection>scm:git:git@github.com:korpling/treetagger-emf-api.git</developerConnection>
 		<url>http://github.com/korpling/treetagger-emf-api</url>
-		<tag>treetagger-emf-api-1.0.0</tag>
+		<tag>HEAD</tag>
 	</scm>
 	<distributionManagement>
 		<repository>
