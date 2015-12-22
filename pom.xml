@@ -4,8 +4,7 @@
 	<groupId>org.corpus-tools</groupId>
 	<artifactId>treetagger-emf-api</artifactId>
 	<version>1.3.2-SNAPSHOT</version>
-	<packaging>bundle</packaging>
-	<description>This project provides a emf meta model and a java api for the treetagger data format produced and consumed by the linguistic tagging tool TreeTagger by Helmut Schmid (see: http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/).</description>
+	<packaging>bundle</packaging>	
 	<licenses>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
