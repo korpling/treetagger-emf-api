@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.corpus-tools</groupId>
 	<artifactId>treetagger-emf-api</artifactId>
 	<version>1.3.3-SNAPSHOT</version>
-	<packaging>bundle</packaging>	
+	<packaging>bundle</packaging>
 	<licenses>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
@@ -17,8 +18,7 @@
 		<url>https://github.com/korpling/treetagger-emf-api/issues</url>
 	</issueManagement>
 	<properties>
-		<github.global.oauth2Token>45dab16f75653b5253ddbf24acd8526ab6cdc162</github.global.oauth2Token>
-		<github.global.server>github</github.global.server>
+		<java.version>1.7</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<component.descriptor.name>serviceComponents.xml</component.descriptor.name>
 		<bundle.file>${project.groupId}.${project.artifactId}_${project.version}.jar</bundle.file>
@@ -44,7 +44,6 @@
 		<connection>scm:git:git://github.com/korpling/treetagger-emf-api.git</connection>
 		<developerConnection>scm:git:git@github.com:korpling/treetagger-emf-api.git</developerConnection>
 		<url>http://github.com/korpling/treetagger-emf-api</url>
-		<tag>HEAD</tag>
 	</scm>
 	<distributionManagement>
 		<snapshotRepository>
@@ -61,13 +60,6 @@
 		<system>Jenkins</system>
 		<url>https://korpling.german.hu-berlin.de/jenkins/</url>
 	</ciManagement>
-	<repositories>
-		<repository>
-			<id>korpling</id>
-			<name>korpling maven repo</name>
-			<url>http://korpling.german.hu-berlin.de/maven2</url>
-		</repository>
-	</repositories>
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -99,7 +91,7 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.5</version>
 		</dependency>
-		
+
 	</dependencies>
 	<build>
 		<plugins>
@@ -118,8 +110,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.3.2</version>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
 				</configuration>
 			</plugin>
 			<!-- start: assembly plugin -->
@@ -176,8 +168,8 @@
 				</executions>
 				<configuration>
 					<manifestLocation>${basedir}/META-INF</manifestLocation>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
 					<instructions>
 						<Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
 						<Bundle-Name>${project.name}</Bundle-Name>
