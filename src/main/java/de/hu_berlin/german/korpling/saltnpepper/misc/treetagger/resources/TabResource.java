@@ -33,6 +33,7 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
 import org.slf4j.Logger;
@@ -491,9 +492,9 @@ public class TabResource extends ResourceImpl {
 	 * auxilliary method for processing input file
 	 */
 	private void setDocumentNames() {
-		//String documentBaseName = this.getURI().lastSegment().split("[.]")[0];
+		URI location = this.getURI();
 		String documentBaseName = "";
-                if(location.lastSegment() != null && location.lastSegment().contains(".")) {
+		        if(location.lastSegment() != null && location.lastSegment().contains(".")) {
                     documentBaseName = location.lastSegment().substring(0, location.lastSegment().lastIndexOf('.'));
                 }
                 else{
